@@ -1,0 +1,10 @@
+{
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "postercitos": "link:..",
+    "sharp": "^0.33.5"
+  }
+}
