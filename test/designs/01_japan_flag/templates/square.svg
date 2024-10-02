@@ -6,9 +6,9 @@
     </linearGradient>
   </defs>
   <rect width="800" height="800" fill="lightblue"/>
-  <rect stroke="blue" x="50" y="100" width="700" height="200" fill="transparent"/>
+  <rect stroke="blue" x="50" y="100" width="300" height="600" fill="transparent"/>
   <text
-    --box-view="50,100,700,200"
+    --box-view="50,100,300,600"
     --align-text="center"
     --fallback="No por mucho madrugar, se amanece más temprano"
     font-size="42"
