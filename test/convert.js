@@ -1,4 +1,4 @@
 import sharp from 'sharp'
 
-sharp('./textix.svg')
-  .toFile('cositax.png')
+sharp('./output/textix.svg')
+  .toFile('./output/cositax.png')
