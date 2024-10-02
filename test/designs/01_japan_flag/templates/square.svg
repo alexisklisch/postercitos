@@ -1,5 +1,20 @@
 <svg height="800" width="800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="degra">
+      <stop offset="5%" stop-color="green"/>
+      <stop offset="95%" stop-color="purple"/>
+    </linearGradient>
+  </defs>
   <rect width="800" height="800" fill="lightblue"/>
-  <text --box-view="0,0,200,600" font-size="64" fill="red">Cuando la vida te dé monedas, haz limones. Ah reee</text>
-  Sorry, your browser does not support inline SVG.
+  <rect stroke="blue" x="50" y="100" width="700" height="200" fill="transparent"/>
+  <text
+    --box-view="50,100,700,200"
+    --align-text="center"
+    --fallback="No por mucho madrugar, se amanece más temprano"
+    font-size="42"
+    fill="red"
+  >%{{description}}%</text>
+  <rect x="50" y="600" width="700" height="100" fill="url(#degra)" rx="24"/>
 </svg>
+
+

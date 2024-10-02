@@ -25,9 +25,9 @@ class Postercitos {
     // Array con rutas de cada diseño
     const svgFileNames = await readdir(templatesDir)
     const svgPaths = svgFileNames.map(file => join(templatesDir, file))
-    const [parsedSVG] = await this.#parseSVG(svgPaths)
+    const parsedSVG = await this.#parseSVG(svgPaths)
 
-    return this.builder.build(parsedSVG)
+    return parsedSVG.map(parsedItem => this.builder.build(parsedItem))
   }
 
   async #parseSVG (svgPaths) {
@@ -45,7 +45,7 @@ class Postercitos {
       }
 
       for (const textElem of text) {
-        if (textElem['@box-view']) {
+        if (textElem['--box-view']) {
           const textGroup = await this.#adaptText(textElem, svg)
           delete svg.text
           svg = {...svg, ...textGroup}
@@ -59,28 +59,77 @@ class Postercitos {
   }
 
   async #adaptText (textElem, svg) {
-    const [ x, y, boxWidth, boxHeight ] = textElem['@box-view'].split(',')
-    const { ['font-size']: fontSize } = textElem
-    const { width: svgWidth, height: svgHeight } = svg
+    // Extraer variables del SVG
+    const [ x, y, boxWidth, boxHeight ] = textElem['--box-view'].split(',').map(Number)
+    const fontSize = +textElem['font-size']
+    const alignText = textElem['--align-text']
+    const text = 'La verdad es que todo se convierte'
+    const words = text.split(' ')
 
-    // Cargar la fuente Montserrat
-    const fontResponse = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/montserrat@latest/latin-400-normal.ttf');
+    // Fuente
+    const fontResponse = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/montserrat@latest/latin-500-normal.ttf');
     const buffer = await fontResponse.arrayBuffer();
     const font = parse(buffer)
+    const scale = fontSize / font.unitsPerEm
 
-    const text = 'La vida es una moneda, porque que se yo'
-    const size = getTextWidth(text, fontSize, font)
+    // Líneas de texto
+    const textLines = []
+    const spaceGlyph = getTextWidth(' ', fontSize, font)
+    let tempLine = ''
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i]
+      const wordSize = getTextWidth(word, fontSize, font)
+      const lineWidthSize = getTextWidth(tempLine, fontSize, font)
+      const sumSizes = lineWidthSize + spaceGlyph + wordSize
+      const isBiggerThanBox = sumSizes > boxWidth
+      
+      console.log(isBiggerThanBox)
+      if (isBiggerThanBox) {
+        textLines.push(tempLine)
+        tempLine = word + ' '
+      } else {
+        tempLine += word + ' '
+      }
+      
+      if (i + 1 === words.length) textLines.push(tempLine)
+    }
+    
+    const textLinesTrimmed = textLines.map(str => str.trim())
+    
+    /*
+    ** AHORA TENGO QUE PASAR LÍNEA POR LÍNEA
+    ** PROCURANDO QUE EL TEXTO QUEDE CENTRADO
+    ** LUEGO VOY A ADAPTARLO SEGUN EL ALIGN TEXT
+    */
+
+    /*
+
+    let currentX = x
+    let currentY = y
+    const glyphs = font.stringToGlyphs(text)
+    const pathData = []
+
+    for (const glyph of glyphs) {
+      const glyphWidth = glyph.advanceWidth * scale
+
+      if (currentX + glyphWidth > x + boxWidth) {
+        currentY += fontSize
+        currentX = x
+      }
+
+      // Obtener el path, ajustando la altura
+      const path = glyph.getPath(currentX, currentY + fontSize, fontSize)
+      pathData.push(path.toSVG())
+      currentX += glyphWidth
+    }
+
+    const path = this.parser.parse(pathData)
 
     return {
       g: {
-        text: [{
-          ...textElem,
-          '#text': text,
-          x,
-          y
-        }]
+        ...path
       }
-    }
+    }*/
   }
 
 }
