@@ -2,6 +2,7 @@ import { readFile, readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { XMLParser, XMLBuilder } from 'fast-xml-parser'
 import { parse } from 'opentype.js'
+import { syllabler } from './utils/syllabler.js'
 
 class Postercitos {
   constructor () {
@@ -63,8 +64,8 @@ class Postercitos {
     const [ x, y, boxWidth, boxHeight ] = textElem['--box-view'].split(',').map(Number)
     const fontSize = +textElem['font-size']
     const alignText = textElem['--align-text']
-    const text = 'La verdad es que todo se convierte'
-    const words = text.split(' ')
+    // const text = 'La verdad es que todo se convierte'
+    // const words = text.split(' ')
 
     // Fuente
     const fontResponse = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/montserrat@latest/latin-500-normal.ttf');
@@ -72,7 +73,7 @@ class Postercitos {
     const font = parse(buffer)
     const scale = fontSize / font.unitsPerEm
 
-    // Líneas de texto
+    /*// Líneas de texto
     const textLines = []
     const spaceGlyph = getTextWidth(' ', fontSize, font)
     let tempLine = ''
@@ -83,7 +84,6 @@ class Postercitos {
       const sumSizes = lineWidthSize + spaceGlyph + wordSize
       const isBiggerThanBox = sumSizes > boxWidth
       
-      console.log(isBiggerThanBox)
       if (isBiggerThanBox) {
         textLines.push(tempLine)
         tempLine = word + ' '
@@ -92,9 +92,47 @@ class Postercitos {
       }
       
       if (i + 1 === words.length) textLines.push(tempLine)
-    }
-    
+      }
     const textLinesTrimmed = textLines.map(str => str.trim())
+    */
+
+    // Test: Texto a escribir
+    const text = 'La vida es una moneda porque aquel que la rebusca la tiene. Siempre que hablemos de monedas, obvio, y no de gruesos billetes.'
+    // Test: Crear un array de palabras
+    const words = text.split(' ')
+    // Test: Array con las líneas
+    const textLines = []
+    // Test: Linea temporar
+    let tempLine = ''
+    // Test: Analiza el caracter <espacio>
+    const spaceGlyph = getTextWidth(' ', fontSize, font)
+
+    while (words.length > 0) {
+      // Test: selecciona y elimina la primer tWord
+      const currentWord = words.shift()
+      // Test: Copiado del código anterior (1)
+      const wordSize = getTextWidth(currentWord, fontSize, font)
+      const lineWidthSize = getTextWidth(tempLine, fontSize, font)
+      const sumSizes = lineWidthSize + spaceGlyph + wordSize
+      const isBiggerThanBox = sumSizes > boxWidth
+
+      if (isBiggerThanBox) {
+        for (const syllabe of syllabler(currentWord)) {
+          const syllabeSize = getTextWidth(syllabe, fontSize, font)
+          const sumSizesWithSillabe = lineWidthSize + spaceGlyph + syllabeSize
+          console.log(sumSizesWithSillabe)
+        }
+
+        textLines.push(tempLine)
+        tempLine = currentWord + ' '
+      } else {
+        tempLine += currentWord + ' '
+      }
+
+      if (words.length - 1 <= 0) textLines.push(tempLine)
+    }
+
+    console.log(textLines)
     
     /*
     ** AHORA TENGO QUE PASAR LÍNEA POR LÍNEA
