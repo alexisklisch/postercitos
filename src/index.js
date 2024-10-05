@@ -64,58 +64,64 @@ class Postercitos {
     const [ x, y, boxWidth, boxHeight ] = textElem['--box-view'].split(',').map(Number)
     const fontSize = +textElem['font-size']
     const alignText = textElem['--align-text']
-    // const text = 'La verdad es que todo se convierte'
-    // const words = text.split(' ')
-
+    
     // Fuente
     const fontResponse = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/montserrat@latest/latin-500-normal.ttf');
     const buffer = await fontResponse.arrayBuffer();
     const font = parse(buffer)
-    const scale = fontSize / font.unitsPerEm
-
-    /*// Líneas de texto
-    const textLines = []
-    const spaceGlyph = getTextWidth(' ', fontSize, font)
-    let tempLine = ''
-    for (let i = 0; i < words.length; i++) {
-      const word = words[i]
-      const wordSize = getTextWidth(word, fontSize, font)
-      const lineWidthSize = getTextWidth(tempLine, fontSize, font)
-      const sumSizes = lineWidthSize + spaceGlyph + wordSize
-      const isBiggerThanBox = sumSizes > boxWidth
-      
-      if (isBiggerThanBox) {
-        textLines.push(tempLine)
-        tempLine = word + ' '
-      } else {
-        tempLine += word + ' '
-      }
-      
-      if (i + 1 === words.length) textLines.push(tempLine)
-      }
-    const textLinesTrimmed = textLines.map(str => str.trim())
-    */
+    // Test: Utilidad para calcular siempre con la fuente seleccionada
+    const withFontWidth = text => getTextWidth(text, fontSize, font)
 
     // Test: Texto a escribir
-    const text = 'La vida es una moneda porque aquel que la rebusca la tiene. Siempre que hablemos de monedas, obvio, y no de gruesos billetes.'
+    const text = 'La vida es una moneda porque aquel que la rebusca la tiene.'
     // Test: Crear un array de palabras
     const words = text.split(' ')
     // Test: Array con las líneas
     const textLines = []
     // Test: Linea temporar
     let tempLine = ''
-    // Test: Analiza el caracter <espacio>
-    const spaceGlyph = getTextWidth(' ', fontSize, font)
+    // Test: Analiza el width de <espacio> y <guión>
+    const spaceWidthSize = withFontWidth(' ')
+    const dashWidthSize = withFontWidth('-')
 
-    while (words.length > 0) {
-      // Test: selecciona y elimina la primer tWord
+    while (words.length >= 1) {
+      // Test: Verifica si es la última palabra
+      const isLastWord = words.length - 1 === 0
+      // Test: selecciona y elimina la primera word[]
       const currentWord = words.shift()
-      // Test: Copiado del código anterior (1)
-      const wordSize = getTextWidth(currentWord, fontSize, font)
-      const lineWidthSize = getTextWidth(tempLine, fontSize, font)
-      const sumSizes = lineWidthSize + spaceGlyph + wordSize
-      const isBiggerThanBox = sumSizes > boxWidth
+      // Test: Analizar nuevos espacios
+      const fullTempLineFontWidth = withFontWidth(`${tempLine} ${currentWord}`)
+      const isBiggerThanBox = fullTempLineFontWidth > boxWidth
 
+      // Test: Evalúa si el texto es la última palabra
+      if (isBiggerThanBox) {
+        // Test: Separo en sílabas
+        const syllabes = syllabler(currentWord)
+        let newLastWordLine = currentWord
+        let restOfWord = ''
+        let counter = syllabes.length
+
+
+        // Test: mientras que el tamaño de la tempLine + el rejunte
+        // Test: de las sílabas sea mayor al width de la caja...
+        while (withFontWidth(`${tempLine} ${syllabes.join('')}`) > boxWidth) {
+          // Test: Quitamos la última sílaba
+          const removedSyllabe = syllabes.pop()
+          restOfWord += removedSyllabe
+          newLastWordLine = syllabes.join('')
+          counter--
+          if (counter === 0) break
+        }
+
+        console.log( restOfWord)
+
+        textLines.push(tempLine)
+        tempLine = ''
+      } else {
+        tempLine += ` ${currentWord}`
+      }
+
+      /*
       if (isBiggerThanBox) {
         for (const syllabe of syllabler(currentWord)) {
           const syllabeSize = getTextWidth(syllabe, fontSize, font)
@@ -129,7 +135,7 @@ class Postercitos {
         tempLine += currentWord + ' '
       }
 
-      if (words.length - 1 <= 0) textLines.push(tempLine)
+      if (words.length - 1 <= 0) textLines.push(tempLine)*/
     }
 
     console.log(textLines)
