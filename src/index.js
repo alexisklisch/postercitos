@@ -69,103 +69,111 @@ class Postercitos {
     const fontResponse = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/montserrat@latest/latin-500-normal.ttf');
     const buffer = await fontResponse.arrayBuffer();
     const font = parse(buffer)
-    // Test: Utilidad para calcular siempre con la fuente seleccionada
+    // Utilidad para calcular siempre con la fuente seleccionada
     const withFontWidth = text => getTextWidth(text, fontSize, font)
 
-    // Test: Texto a escribir
-    const text = 'La vida es una moneda porque aquel que la rebusca la tiene.'
-    // Test: Crear un array de palabras
+    // Texto a escribir
+    const text = 'La vida es una moneda porque aquel que la rebusca la tiene. Claramente esto es siempre que hablemos de monedas y no de gruesos billetes.'
+    // Crear un array de palabras
     const words = text.split(' ')
-    // Test: Array con las líneas
+    // Array con las líneas
     const textLines = []
-    // Test: Linea temporar
+    // Linea temporar
     let tempLine = ''
-    // Test: Analiza el width de <espacio> y <guión>
-    const spaceWidthSize = withFontWidth(' ')
-    const dashWidthSize = withFontWidth('-')
 
     while (words.length >= 1) {
-      // Test: Verifica si es la última palabra
+      // Verifica si es la última palabra
       const isLastWord = words.length - 1 === 0
-      // Test: selecciona y elimina la primera word[]
+      // selecciona y elimina la primera word[]
       const currentWord = words.shift()
-      // Test: Analizar nuevos espacios
+      // Analizar nuevos espacios
       const fullTempLineFontWidth = withFontWidth(`${tempLine} ${currentWord}`)
       const isBiggerThanBox = fullTempLineFontWidth > boxWidth
-
-      // Test: Evalúa si el texto es la última palabra
+      
+      
+      // Si el texto es mas grande que la caja de texto...
       if (isBiggerThanBox) {
-        // Test: Separo en sílabas
+        // Separo en sílabas la palabra
         const syllabes = syllabler(currentWord)
-        let newLastWordLine = currentWord
-        let restOfWord = ''
-        let counter = syllabes.length
-
-
-        // Test: mientras que el tamaño de la tempLine + el rejunte
-        // Test: de las sílabas sea mayor al width de la caja...
-        while (withFontWidth(`${tempLine} ${syllabes.join('')}`) > boxWidth) {
-          // Test: Quitamos la última sílaba
-          const removedSyllabe = syllabes.pop()
-          restOfWord += removedSyllabe
-          newLastWordLine = syllabes.join('')
-          counter--
-          if (counter === 0) break
+        // Utilidad para saber siempre el temaño con las sílabas actuales
+        const currentSyllabesFontWidth = () => withFontWidth(`${tempLine} ${syllabes.join('')}-`.trim())
+        // Variable donde se guarda la/s sílaba a enviar debajo
+        let nextLineSyllabes = ''
+        
+        // Mientras que la actual palabra con guión sea más grande...
+        while (currentSyllabesFontWidth() > boxWidth) {
+          const currentSyllabe = syllabes.pop()
+          // Si la cantidad de sílabas es igual a 0
+          if (syllabes.length === 0) {
+            // La sílaba de la siguiente línea es la palabra entera
+            nextLineSyllabes = currentWord
+            // Y detengo el ciclo while
+            break
+          }
+          // Si no ocurre nada de ésto, la sílaba de la próxima línea se le suma ésta sílaba
+          nextLineSyllabes += currentSyllabe
         }
 
-        console.log( restOfWord)
-
+        words.unshift(nextLineSyllabes)
+        tempLine = `${tempLine} ${syllabes.join('') ? `${syllabes.join('')}-` : ''}`.trim()
         textLines.push(tempLine)
         tempLine = ''
+        nextLineSyllabes = ''
+
       } else {
         tempLine += ` ${currentWord}`
+        // Si es la última línea, y entra en la caja, hacer push
+        if (words.length === 0) textLines.push(tempLine.trim())
       }
-
-      /*
-      if (isBiggerThanBox) {
-        for (const syllabe of syllabler(currentWord)) {
-          const syllabeSize = getTextWidth(syllabe, fontSize, font)
-          const sumSizesWithSillabe = lineWidthSize + spaceGlyph + syllabeSize
-          console.log(sumSizesWithSillabe)
-        }
-
-        textLines.push(tempLine)
-        tempLine = currentWord + ' '
-      } else {
-        tempLine += currentWord + ' '
-      }
-
-      if (words.length - 1 <= 0) textLines.push(tempLine)*/
     }
 
-    console.log(textLines)
-    
     /*
     ** AHORA TENGO QUE PASAR LÍNEA POR LÍNEA
     ** PROCURANDO QUE EL TEXTO QUEDE CENTRADO
     ** LUEGO VOY A ADAPTARLO SEGUN EL ALIGN TEXT
     */
 
-    /*
+    
 
     let currentX = x
     let currentY = y
-    const glyphs = font.stringToGlyphs(text)
     const pathData = []
-
-    for (const glyph of glyphs) {
-      const glyphWidth = glyph.advanceWidth * scale
-
-      if (currentX + glyphWidth > x + boxWidth) {
-        currentY += fontSize
-        currentX = x
+    const scale = fontSize / font.unitsPerEm
+    
+    /*textLines.forEach((line, i) => {
+      const glyphs = font.stringToGlyphs(line)
+      for (const glyph of glyphs) {
+        const glyphWidth = glyph.advanceWidth * scale
+  
+        if (currentX + glyphWidth > x + boxWidth) {
+          currentY += fontSize
+          currentX = x
+        }
+  
+        // Obtener el path, ajustando la altura
+        const path = glyph.getPath(currentX, currentY + fontSize, fontSize)
+        pathData.push(path.toSVG())
+        currentX += glyphWidth
       }
 
-      // Obtener el path, ajustando la altura
-      const path = glyph.getPath(currentX, currentY + fontSize, fontSize)
-      pathData.push(path.toSVG())
-      currentX += glyphWidth
-    }
+    })*/
+
+    textLines.forEach((line, i) => {
+      currentX = x
+      if (i > 0) currentY += fontSize
+
+      const glyphs = font.stringToGlyphs(line)
+      for (const glyph of glyphs) {
+        const glyphWidth = glyph.advanceWidth * scale
+  
+        // Obtener el path, ajustando la altura
+        const path = glyph.getPath(currentX, currentY + fontSize, fontSize)
+        pathData.push(path.toSVG())
+        currentX += glyphWidth
+      }
+
+    })
+
 
     const path = this.parser.parse(pathData)
 
@@ -173,7 +181,7 @@ class Postercitos {
       g: {
         ...path
       }
-    }*/
+    }
   }
 
 }
