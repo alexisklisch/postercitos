@@ -6,13 +6,12 @@
     </linearGradient>
   </defs>
   <rect width="800" height="800" fill="lightblue"/>
-  <rect stroke="blue" x="120" y="70" width="500" height="300" fill="transparent"/>
+  <rect stroke="#99f" x="120" y="70" width="200" height="300" fill="transparent"/>
   <text
-    --box-view="120,70,500,300"
-    --align-text="center"
+    --box-view="120,70,200,300"
+    --align-text="left"
     --fallback="No por mucho madrugar, se amanece más temprano"
-    font-size="32"
-    fill="red"
+    font-size="18"
   >%{{description}}%</text>
   <rect x="50" y="600" width="700" height="100" fill="url(#degra)" rx="24"/>
 </svg>

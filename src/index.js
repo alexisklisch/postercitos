@@ -36,7 +36,6 @@ class Postercitos {
     const svgs = []
     for (const svgPath of svgPaths) {
       const svgRaw = await readFile(svgPath, { encoding: 'utf-8' })
-      console.log(this.parser.parse(svgRaw))
       let { svg } = this.parser.parse(svgRaw) // Hago un parse
       let { text } = svg
 
@@ -64,6 +63,7 @@ class Postercitos {
     // Extraer variables del SVG
     const [ x, y, boxWidth, boxHeight ] = textElem['--box-view'].split(',').map(Number)
     const fontSize = +textElem['font-size']
+    const fill = textElem['fill'] || undefined
     const alignText = textElem['--align-text']
     
     // Fuente
@@ -132,7 +132,10 @@ class Postercitos {
     const scale = fontSize / font.unitsPerEm
     
     textLines.forEach((line, i) => {
-      currentX = x
+      if (alignText === 'left') currentX = x
+      if (alignText === 'center') currentX = x + (boxWidth - withFontWidth(line)) / 2
+      if (alignText === 'right') currentX = x + boxWidth - withFontWidth(line)
+
       if (i > 0) currentY += fontSize
 
       const glyphs = font.stringToGlyphs(line)
@@ -152,6 +155,7 @@ class Postercitos {
 
     return {
       g: {
+        fill,
         ...path
       }
     }
