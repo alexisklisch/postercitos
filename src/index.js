@@ -26,10 +26,71 @@ class Postercitos {
     // Array con rutas de cada diseño
     const svgFileNames = await readdir(templatesDir)
     const svgPaths = svgFileNames.map(file => join(templatesDir, file))
-    const parsedSVG = await this.#parseSVG(svgPaths)
+    
+    //const parsedSVG = await this.#parseSVG(svgPaths)
+    //return parsedSVG.map(parsedItem => this.builder.build(parsedItem))
 
-    return parsedSVG.map(parsedItem => this.builder.build(parsedItem))
+    /*
+    ** PROBANDO EL PARSER QUE RESPETA
+    ** LAS POSICIONES DEL SVG
+    */
+    // Test: Leo y parseo los .svg para tenerlo de forma conveniente
+    const svgsReadPromise = svgPaths.map(async (path) => this.#prepareTemplateFile(path))
+    const allSVGPromises = await Promise.allSettled(svgsReadPromise).then(svg => svg)
+    const svgsTemplates = allSVGPromises.map(promise => promise.value)
+    // Test: Convierto los templates en svgs funcionales
+    const svgs = svgsTemplates.map(template => this.#drawSVG(template))
+    /*
+    ** VOLVEMOS A LO HABITUAL
+    */
+
+    return []
   }
+
+  async #prepareTemplateFile (svgPath) {
+    // Leo el archivo SVG
+    const svgRaw = await readFile(svgPath, { encoding: 'utf-8' })
+    // Uso REGEX para extraer todas las variables del .svg
+    const variablesRegex = /%\{\{(.*?)\}\}%/g
+    const regexResult = svgRaw.match(variablesRegex)
+    const variablesRawArray = regexResult.map(match => match.slice(3, -3))
+    // Devuelve un objeto con fallback si lo tiene
+    const variables = variablesRawArray.map(svgVar => {
+      const haveFallback = svgVar[0] === '['
+      let rawVariable = ''
+
+      if (haveFallback) {
+        const [value, fallback] = JSON.parse(svgVar)
+        rawVariable = `%{{${value}}}%`
+        return {value, rawVariable, fallback}
+      }
+
+      rawVariable = `%{{${svgVar}}}%`
+      return {value: svgVar, rawVariable}
+
+    })
+
+    // Parsea el SVG
+    const parser = new XMLParser({preserveOrder: true, ignoreAttributes: false, attributeNamePrefix: ''})
+    const parsedXML = parser.parse(svgRaw)
+
+    return {
+      content: parsedXML,
+      variables
+    }
+  }
+
+  #drawSVG (svgTemplate) {
+    const { content, varibles } = svgTemplate
+    const [ body ] = content
+
+    body.svg.forEach(item => {
+      console.log(JSON.stringify(item))
+
+    })
+  }
+
+
 
   async #parseSVG (svgPaths) {
     // Paso por cada SVG
@@ -67,7 +128,7 @@ class Postercitos {
     const alignText = textElem['--align-text']
     
     // Fuente
-    const fontResponse = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/montserrat@latest/latin-500-normal.ttf');
+    const fontResponse = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/open-sans@latest/latin-300-normal.ttf');
     const buffer = await fontResponse.arrayBuffer();
     const font = parse(buffer)
     // Utilidad para calcular siempre con la fuente seleccionada
