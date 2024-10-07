@@ -36,6 +36,7 @@ class Postercitos {
     const svgs = []
     for (const svgPath of svgPaths) {
       const svgRaw = await readFile(svgPath, { encoding: 'utf-8' })
+      console.log(this.parser.parse(svgRaw))
       let { svg } = this.parser.parse(svgRaw) // Hago un parse
       let { text } = svg
 
@@ -82,8 +83,6 @@ class Postercitos {
     let tempLine = ''
 
     while (words.length >= 1) {
-      // Verifica si es la última palabra
-      const isLastWord = words.length - 1 === 0
       // selecciona y elimina la primera word[]
       const currentWord = words.shift()
       // Analizar nuevos espacios
@@ -111,7 +110,7 @@ class Postercitos {
             break
           }
           // Si no ocurre nada de ésto, la sílaba de la próxima línea se le suma ésta sílaba
-          nextLineSyllabes += currentSyllabe
+          nextLineSyllabes = currentSyllabe + nextLineSyllabes
         }
 
         words.unshift(nextLineSyllabes)
@@ -127,37 +126,11 @@ class Postercitos {
       }
     }
 
-    /*
-    ** AHORA TENGO QUE PASAR LÍNEA POR LÍNEA
-    ** PROCURANDO QUE EL TEXTO QUEDE CENTRADO
-    ** LUEGO VOY A ADAPTARLO SEGUN EL ALIGN TEXT
-    */
-
-    
-
     let currentX = x
     let currentY = y
     const pathData = []
     const scale = fontSize / font.unitsPerEm
     
-    /*textLines.forEach((line, i) => {
-      const glyphs = font.stringToGlyphs(line)
-      for (const glyph of glyphs) {
-        const glyphWidth = glyph.advanceWidth * scale
-  
-        if (currentX + glyphWidth > x + boxWidth) {
-          currentY += fontSize
-          currentX = x
-        }
-  
-        // Obtener el path, ajustando la altura
-        const path = glyph.getPath(currentX, currentY + fontSize, fontSize)
-        pathData.push(path.toSVG())
-        currentX += glyphWidth
-      }
-
-    })*/
-
     textLines.forEach((line, i) => {
       currentX = x
       if (i > 0) currentY += fontSize
