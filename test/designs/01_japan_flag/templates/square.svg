@@ -10,8 +10,7 @@
   <text
     --box-view="120,70,300,200"
     --align-text="left"
-    --fallback="No por mucho madrugar, se amanece más temprano"
-    font-size="18"
+    font-size="33"
   >%{{description}}%</text>%{{["cositamala", "El cielo resplandece a mi alrededor"]}}%
   <rect x="50" y="600" width="700" height="100" fill="url(#degra)" rx="24"/>
 </svg>

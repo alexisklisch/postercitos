@@ -5,9 +5,10 @@ import { parse } from 'opentype.js'
 import { syllabler } from './utils/syllabler.js'
 
 class Postercitos {
-  constructor () {
+  constructor ({vars}) {
+    this.vars = vars
     // Configurar parser
-    const commonConfig = { attributeNamePrefix: '', ignoreAttributes: false }
+    const commonConfig = {preserveOrder: true, ignoreAttributes: false, attributeNamePrefix: ''}
     this.parser = new XMLParser(commonConfig)
     this.builder = new XMLBuilder(commonConfig)
   }
@@ -26,25 +27,17 @@ class Postercitos {
     // Array con rutas de cada diseño
     const svgFileNames = await readdir(templatesDir)
     const svgPaths = svgFileNames.map(file => join(templatesDir, file))
-    
-    //const parsedSVG = await this.#parseSVG(svgPaths)
-    //return parsedSVG.map(parsedItem => this.builder.build(parsedItem))
 
-    /*
-    ** PROBANDO EL PARSER QUE RESPETA
-    ** LAS POSICIONES DEL SVG
-    */
-    // Test: Leo y parseo los .svg para tenerlo de forma conveniente
-    const svgsReadPromise = svgPaths.map(async (path) => this.#prepareTemplateFile(path))
-    const allSVGPromises = await Promise.allSettled(svgsReadPromise).then(svg => svg)
-    const svgsTemplates = allSVGPromises.map(promise => promise.value)
-    // Test: Convierto los templates en svgs funcionales
-    const svgs = svgsTemplates.map(template => this.#drawSVG(template))
-    /*
-    ** VOLVEMOS A LO HABITUAL
-    */
+    // Leo y parseo los .svg para tenerlo de forma conveniente
+    const SVGsTemplatePromises = svgPaths.map(async (path) => this.#prepareTemplateFile(path))
+    const SVGsTemplatesResult = await Promise.allSettled(SVGsTemplatePromises).then(svg => svg)
+    const svgsTemplates = SVGsTemplatesResult.map(promise => promise.value)
+    // Convierto los templates en svgs funcionales
+    const svgsPromises = svgsTemplates.map(template => this.#drawSVG(template))
+    const svgsResult = await Promise.allSettled(svgsPromises).then(svg => svg)
+    const svgs = svgsResult.map(promise => [promise.value])
 
-    return []
+    return svgs.map(svg => this.builder.build(svg))
   }
 
   async #prepareTemplateFile (svgPath) {
@@ -71,8 +64,7 @@ class Postercitos {
     })
 
     // Parsea el SVG
-    const parser = new XMLParser({preserveOrder: true, ignoreAttributes: false, attributeNamePrefix: ''})
-    const parsedXML = parser.parse(svgRaw)
+    const parsedXML = this.parser.parse(svgRaw)
 
     return {
       content: parsedXML,
@@ -80,54 +72,49 @@ class Postercitos {
     }
   }
 
-  #drawSVG (svgTemplate) {
-    const { content, varibles } = svgTemplate
+  async #drawSVG (svgTemplate) {
+    const { content, variables } = svgTemplate
     const [ body ] = content
-
-    body.svg.forEach(item => {
-      console.log(JSON.stringify(item))
-
-    })
-  }
-
-
-
-  async #parseSVG (svgPaths) {
-    // Paso por cada SVG
-    const svgs = []
-    for (const svgPath of svgPaths) {
-      const svgRaw = await readFile(svgPath, { encoding: 'utf-8' })
-      let { svg } = this.parser.parse(svgRaw) // Hago un parse
-      let { text } = svg
-
-      // Si text es un objeto, lo convierto en array
-      if (text && !Array.isArray(text)) {
-        text = [ text ]
-        svg.text = text
-      }
-
-      for (const textElem of text) {
-        if (textElem['--box-view']) {
-          const textGroup = await this.#adaptText(textElem, svg)
-          delete svg.text
-          svg = {...svg, ...textGroup}
-        }
-      }
-      
-      svgs.push({svg})
-    }
-
-    return svgs
-  }
-
-  async #adaptText (textElem, svg) {
-    // Extraer variables del SVG
-    const [ x, y, boxWidth, boxHeight ] = textElem['--box-view'].split(',').map(Number)
-    const fontSize = +textElem['font-size']
-    const fill = textElem['fill'] || undefined
-    const alignText = textElem['--align-text']
     
-    // Fuente
+    // Recorro cada elemento del svg
+    for (let i = 0; i < body.svg.length; i++) {
+      const item = body.svg[i]
+      // Guardo las keys de cada elemento
+      const keys = Object.keys(item)
+      const [ type ] = keys
+      // Si el elemento es de tipo texto...
+      if (type === 'text') {
+        // Guarda en una variable el texto
+        let text = item.text[0]['#text']
+        variables.forEach(svgVariable => {
+          // Expresión regular para reemplazar c/ variable
+          const regex = new RegExp(svgVariable.rawVariable, 'g')
+          const existVar = text.includes(svgVariable.rawVariable)
+          if (existVar) text = text.replace(regex, this.vars[svgVariable.value])
+        })
+        console.log('antes -> ' + JSON.stringify(body.svg[i]))
+        body.svg[i].text[0]['#text'] = text
+        console.log('despu -> ' + JSON.stringify(body.svg[i]))
+
+        // Hago una adaptación del texto
+        const shapes = await this.#adaptText(item)
+        // y reemplazo el texto por los shapes
+        body.svg[i] = shapes
+      }
+    }
+    return body
+
+  }
+
+  async #adaptText(textObject) {
+    // Establezco los atributos
+    const attributes = textObject[':@']
+    const [ x, y, boxWidth, boxHeight ] = attributes['--box-view'].split(',').map(Number)
+    const fontSize = +attributes['font-size']
+    const fill = attributes['fill'] || undefined
+    const alignText = attributes['--align-text']
+
+    // Usar fuente
     const fontResponse = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/open-sans@latest/latin-300-normal.ttf');
     const buffer = await fontResponse.arrayBuffer();
     const font = parse(buffer)
@@ -135,7 +122,7 @@ class Postercitos {
     const withFontWidth = text => getTextWidth(text, fontSize, font)
 
     // Texto a escribir
-    const text = 'La vida es una moneda porque aquel que la rebusca la tiene. Claramente esto es siempre que hablemos de monedas y no de gruesos billetes.'
+    const text = textObject.text[0]['#text']
     // Crear un array de palabras
     const words = text.split(' ')
     // Array con las líneas
@@ -211,17 +198,17 @@ class Postercitos {
 
     })
 
-
     const path = this.parser.parse(pathData)
+    
+    const result = {
+      g: path
+    }
 
     return {
-      g: {
-        fill,
-        ...path
-      }
+      g: path,
+      ":@": {}
     }
   }
-
 }
 
 function getTextWidth(text, fontSize, font) {
