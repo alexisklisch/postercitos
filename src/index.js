@@ -114,7 +114,7 @@ class Postercitos {
     const fill = attributes['fill'] || undefined
     const alignText = attributes['--align-text']
     const lineHeight = +attributes['--line-height'] || 0
-    const kerning = +attributes['--kerning']
+    const letterSpacing = +attributes['letter-spacing']
 
     // Usar fuente
     const fontResponse = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/open-sans@latest/latin-300-normal.ttf');
@@ -195,7 +195,7 @@ class Postercitos {
         // Obtener el path, ajustando la altura
         const path = glyph.getPath(currentX, currentY + fontSize, fontSize)
         pathData.push(path.toSVG())
-        currentX += glyphWidth
+        currentX += glyphWidth + letterSpacing
       }
 
     })
@@ -209,24 +209,12 @@ class Postercitos {
   }
 }
 
-function getTextWidth(text, fontSize, font, kerning) {
+function getTextWidth(text, fontSize, font) {
   const scale = fontSize / font.unitsPerEm;
-    let width = 0
-
-    const glyphs = font.stringToGlyphs(text)
-    for (let i = 0; i < glyphs.length; i++) {
-        const glyph = glyphs[i]
-        width += glyph.advanceWidth * scale
-
-        // Si hay kerning, calcular entre pares de glifos
-        if (kerning && i < glyphs.length - 1) {
-            const nextGlyph = glyphs[i + 1]
-            const kernValue = font.getKerningValue(glyph, nextGlyph) * scale
-            width += kernValue
-        }
-    }
-
-    return width
+  return text.split('').reduce((acc, char) => {
+    const glyph = font.charToGlyph(char);
+    return acc + glyph.advanceWidth * scale;
+  }, 0)
 }
 
 export default Postercitos
