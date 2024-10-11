@@ -4,7 +4,7 @@ import { writeFile } from 'node:fs/promises'
 
 const postercitos= new Postercitos({
   vars: {
-    description: 'A ver si ahora funciona bien'
+    description: 'La vida es una pequeña lenteja porque o la tomas o la dejas siempre que mires a tu corazón.'
   }
 })
 const [design] = await postercitos.oneDesign('./designs/01_japan_flag')

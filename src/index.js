@@ -113,6 +113,8 @@ class Postercitos {
     const fontSize = +attributes['font-size']
     const fill = attributes['fill'] || undefined
     const alignText = attributes['--align-text']
+    const lineHeight = +attributes['--line-height'] || 0
+    const kerning = +attributes['--kerning']
 
     // Usar fuente
     const fontResponse = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/open-sans@latest/latin-300-normal.ttf');
@@ -184,7 +186,7 @@ class Postercitos {
       if (alignText === 'center') currentX = x + (boxWidth - withFontWidth(line)) / 2
       if (alignText === 'right') currentX = x + boxWidth - withFontWidth(line)
 
-      if (i > 0) currentY += fontSize
+      if (i > 0) currentY += fontSize + lineHeight
 
       const glyphs = font.stringToGlyphs(line)
       for (const glyph of glyphs) {
@@ -199,10 +201,6 @@ class Postercitos {
     })
 
     const path = this.parser.parse(pathData)
-    
-    const result = {
-      g: path
-    }
 
     return {
       g: path,
@@ -211,12 +209,24 @@ class Postercitos {
   }
 }
 
-function getTextWidth(text, fontSize, font) {
+function getTextWidth(text, fontSize, font, kerning) {
   const scale = fontSize / font.unitsPerEm;
-  return text.split('').reduce((acc, char) => {
-    const glyph = font.charToGlyph(char);
-    return acc + glyph.advanceWidth * scale;
-  }, 0)
+    let width = 0
+
+    const glyphs = font.stringToGlyphs(text)
+    for (let i = 0; i < glyphs.length; i++) {
+        const glyph = glyphs[i]
+        width += glyph.advanceWidth * scale
+
+        // Si hay kerning, calcular entre pares de glifos
+        if (kerning && i < glyphs.length - 1) {
+            const nextGlyph = glyphs[i + 1]
+            const kernValue = font.getKerningValue(glyph, nextGlyph) * scale
+            width += kernValue
+        }
+    }
+
+    return width
 }
 
 export default Postercitos
