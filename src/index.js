@@ -92,9 +92,7 @@ class Postercitos {
           const existVar = text.includes(svgVariable.rawVariable)
           if (existVar) text = text.replace(regex, this.vars[svgVariable.value])
         })
-        console.log('antes -> ' + JSON.stringify(body.svg[i]))
         body.svg[i].text[0]['#text'] = text
-        console.log('despu -> ' + JSON.stringify(body.svg[i]))
 
         // Hago una adaptación del texto
         const shapes = await this.#adaptText(item)
@@ -113,15 +111,16 @@ class Postercitos {
     const fontSize = +attributes['font-size']
     const fill = attributes['fill'] || undefined
     const alignText = attributes['--align-text']
+    const verticalAlign = attributes['--vertical-align'] || 'top'
     const lineHeight = +attributes['--line-height'] || 0
-    const letterSpacing = +attributes['letter-spacing']
+    const letterSpacing = +attributes['letter-spacing'] || 0
 
     // Usar fuente
     const fontResponse = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/open-sans@latest/latin-300-normal.ttf');
     const buffer = await fontResponse.arrayBuffer();
     const font = parse(buffer)
     // Utilidad para calcular siempre con la fuente seleccionada
-    const withFontWidth = text => getTextWidth(text, fontSize, font)
+    const withFontWidth = text => getTextWidth(text, fontSize, font, letterSpacing)
 
     // Texto a escribir
     const text = textObject.text[0]['#text']
@@ -180,11 +179,15 @@ class Postercitos {
     let currentY = y
     const pathData = []
     const scale = fontSize / font.unitsPerEm
+
+    const AllLinesSize = textLines.length * fontSize + (textLines.length - 1) * lineHeight
+    if (verticalAlign === 'middle') currentY = y + (boxHeight - AllLinesSize) / 2
+    else if (verticalAlign === 'bottom') currentY = y + boxHeight - AllLinesSize
     
     textLines.forEach((line, i) => {
       if (alignText === 'left') currentX = x
-      if (alignText === 'center') currentX = x + (boxWidth - withFontWidth(line)) / 2
-      if (alignText === 'right') currentX = x + boxWidth - withFontWidth(line)
+      else if (alignText === 'center') currentX = x + (boxWidth - withFontWidth(line)) / 2
+      else if (alignText === 'right') currentX = x + boxWidth - withFontWidth(line)
 
       if (i > 0) currentY += fontSize + lineHeight
 
@@ -204,17 +207,29 @@ class Postercitos {
 
     return {
       g: path,
-      ":@": {}
+      ":@": {
+        fill
+      }
     }
   }
 }
 
-function getTextWidth(text, fontSize, font) {
+// Función externa modificada para incluir kerning
+function getTextWidth(text, fontSize, font, kerning) {
   const scale = fontSize / font.unitsPerEm;
-  return text.split('').reduce((acc, char) => {
-    const glyph = font.charToGlyph(char);
-    return acc + glyph.advanceWidth * scale;
-  }, 0)
+  let width = 0
+  const glyphs = font.stringToGlyphs(text)
+  for (let i = 0; i < glyphs.length; i++) {
+    const glyph = glyphs[i]
+    width += glyph.advanceWidth * scale
+    
+    // Si hay kerning, calcular entre pares de glifos
+    if (kerning && i < glyphs.length - 1) {
+      width += kerning
+    }
+  }
+
+  return width
 }
 
 export default Postercitos
