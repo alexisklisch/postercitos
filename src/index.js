@@ -5,8 +5,10 @@ import { parse } from 'opentype.js'
 import { syllabler } from './utils/syllabler.js'
 
 class Postercitos {
-  constructor ({vars}) {
-    this.vars = vars
+  constructor (config) {
+    const { vars, fonts } = config
+    this.userVars = vars
+    this.fonts = fonts
     // Configurar parser
     const commonConfig = {preserveOrder: true, ignoreAttributes: false, attributeNamePrefix: ''}
     this.parser = new XMLParser(commonConfig)
@@ -90,7 +92,7 @@ class Postercitos {
           // Expresión regular para reemplazar c/ variable
           const regex = new RegExp(svgVariable.rawVariable, 'g')
           const existVar = text.includes(svgVariable.rawVariable)
-          if (existVar) text = text.replace(regex, this.vars[svgVariable.value])
+          if (existVar) text = text.replace(regex, this.userVars[svgVariable.value])
         })
         body.svg[i].text[0]['#text'] = text
 
@@ -114,10 +116,13 @@ class Postercitos {
     const verticalAlign = attributes['--vertical-align'] || 'top'
     const lineHeight = +attributes['--line-height'] || 0
     const letterSpacing = +attributes['letter-spacing'] || 0
+    const fontFamily = attributes['font-family']
+    const fontWeight = +attributes['font-weight']
 
     // Usar fuente
-    const fontResponse = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/open-sans@latest/latin-300-normal.ttf');
-    const buffer = await fontResponse.arrayBuffer();
+    const selectedFont = this.fonts.find(font => font.name === fontFamily && font.weight === (fontWeight || 400))
+    console.log(selectedFont)
+    const buffer = selectedFont.data
     const font = parse(buffer)
     // Utilidad para calcular siempre con la fuente seleccionada
     const withFontWidth = text => getTextWidth(text, fontSize, font, letterSpacing)

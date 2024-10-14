@@ -1,20 +1,31 @@
 <svg height="800" width="800" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="degra">
+    <linearGradient id="degra" gradientUnits="userSpaceOnUse">
       <stop offset="5%" stop-color="green"/>
       <stop offset="95%" stop-color="purple"/>
     </linearGradient>
   </defs>
-  <rect width="800" height="800" fill="lightblue"/>
-  <rect stroke="#99f" x="130" y="70" width="550" height="400" fill="transparent"/>
+  <rect width="800" height="800" fill="#317"/>
   <text
-    --box-view="130,70,550,400"
+    --box-view="20,20,300,42"
     --align-text="center"
-    --vertical-align="bottom"
+    --vertical-align="top"
     --line-height="13"
-    fill="red"
-    font-size="33"
-  >%{{description}}%</text>%{{["cositamala", "El cielo resplandece a mi alrededor"]}}%
+    font-family="Courier Prime"
+    font-weight="700"
+    fill="url(#degra)"
+    font-size="28"
+  >%{{titulo}}%</text>
+  <text
+    --box-view="45,60,240,200"
+    --align-text="center"
+    --vertical-align="top"
+    --line-height="4"
+    font-family="Courier Prime"
+    font-weight="400"
+    fill="#ddd"
+    font-size="14"
+  >%{{cuerpo}}%</text>
   <rect x="50" y="600" width="700" height="100" fill="url(#degra)" rx="24"/>
 </svg>
 
