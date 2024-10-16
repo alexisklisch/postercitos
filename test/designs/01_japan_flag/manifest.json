@@ -9,9 +9,5 @@
   },
   "assets": {
     "images": ["man.jpg", "kids.png", "house.jpg"]
-  },
-  "vars": [
-    {"name": "--description"},
-    {"name": "--title", "default": "Diseño sin título"}
-  ]
+  }
 }

@@ -4,6 +4,7 @@ import { XMLParser, XMLBuilder } from 'fast-xml-parser'
 import { parse } from 'opentype.js'
 import { syllabler } from './utils/syllabler.js'
 
+// Entre 24 y 32 ms la versión 0.2
 class Postercitos {
   constructor (config) {
     const { vars, fonts } = config
@@ -15,11 +16,11 @@ class Postercitos {
     this.builder = new XMLBuilder(commonConfig)
   }
 
-  async oneDesign (designDirPath) {
+  async svgsFrom (designPath, {batch = false} = {}) {
     // Establecer directorios
-    const designDir = join(process.cwd(), designDirPath)
-    const manifestPath = join(designDir, 'manifest.json') //📄 manifest.json
-    const templatesDir = join(designDir, 'templates') //📂 /templates
+    const designDir = join(process.cwd(), designPath)
+    const manifestPath = join(designDir, 'manifest.json') //📄 ruta /manifest.json
+    const templatesDir = join(designDir, 'templates') //📂 ruta templates/
 
     // Parsear el manifest
     const manifestRaw = await readFile(manifestPath, { encoding: 'utf-8' })
@@ -27,11 +28,91 @@ class Postercitos {
     const { assets, metadata, vars } = manifest
 
     // Array con rutas de cada diseño
-    const svgFileNames = await readdir(templatesDir)
-    const svgPaths = svgFileNames.map(file => join(templatesDir, file))
+    const templatesFileNames = await readdir(templatesDir)
+    const templatePaths = templatesFileNames.map(file => join(templatesDir, file))
 
+    const templates = []
+
+    // Aplicar variables
+    for (const templatePath of templatePaths) {
+      let rawTemplate = await readFile(templatePath, {encoding: 'utf-8'})
+      //const templateName = templatePath.split('/').pop().split('.').slice(0, -1).join('')
+
+      // Aplicar las variables del usuario al template
+      const templateWithVarsApplied = replaceWithVariables(rawTemplate, this.userVars)
+      templates.push(templateWithVarsApplied)
+    }
+
+    // Parsear el SVG
+    const parsedSVGs = templates.map(tmplt => this.parser.parse(tmplt))
+
+    return parsedSVGs
+
+  }
+
+  
+}
+
+// Utilidad para parsear las variables de un template
+const replaceWithVariables = (svg, userVars) => {
+  const regex = /\{\{([^}]+)\}\}/g
+
+  const templateVars = [...svg.matchAll(regex)].reduce((acc, currMatch) => {
+    const variableStatements = currMatch[1].split(',').map(statement => statement.trim())
+
+    const variableObject = variableStatements.reduce((obj, statement) => {
+      let [param, value] = statement.split(':').map(item => item.trim())
+      if (param === 'default') value = value.slice(1, -1)
+      obj[param] = value // Construir el objeto con cada parámetro
+      return obj
+    }, {})
+
+    acc.push(variableObject)
+    return acc
+  }, [])
+
+  const userVarsEntries = Object.entries(userVars)
+  templateVars.forEach(tmpltVar => {
+    const [varName, varValue] = userVarsEntries.find(([key, value]) => key === tmpltVar.variable)
+    const wordToRegex = `:${varName}`
+    const regexWithVar = new RegExp(`\\{\\{[^{}]*${wordToRegex}[^{}]*\\}\\}`, 'g')
+    
+    const textToReplace = [...svg.matchAll(regexWithVar)].map(match => match[0])
+
+    svg = svg.replaceAll(textToReplace, varValue)
+  })
+
+
+  return svg
+
+}
+
+// Función externa modificada para incluir kerning
+function getTextWidth(text, fontSize, font, kerning) {
+  const scale = fontSize / font.unitsPerEm;
+  let width = 0
+  const glyphs = font.stringToGlyphs(text)
+  for (let i = 0; i < glyphs.length; i++) {
+    const glyph = glyphs[i]
+    width += glyph.advanceWidth * scale
+    
+    // Si hay kerning, calcular entre pares de glifos
+    if (kerning && i < glyphs.length - 1) {
+      width += kerning
+    }
+  }
+
+  return width
+}
+
+export default Postercitos
+
+
+
+
+/*
     // Leo y parseo los .svg para tenerlo de forma conveniente
-    const SVGsTemplatePromises = svgPaths.map(async (path) => this.#prepareTemplateFile(path))
+    const SVGsTemplatePromises = templatePaths.map(async (path) => this.#prepareTemplateFile(path))
     const SVGsTemplatesResult = await Promise.allSettled(SVGsTemplatePromises).then(svg => svg)
     const svgsTemplates = SVGsTemplatesResult.map(promise => promise.value)
     // Convierto los templates en svgs funcionales
@@ -39,10 +120,9 @@ class Postercitos {
     const svgsResult = await Promise.allSettled(svgsPromises).then(svg => svg)
     const svgs = svgsResult.map(promise => [promise.value])
 
-    return svgs.map(svg => this.builder.build(svg))
-  }
+    return svgs.map(svg => this.builder.build(svg))*/
 
-  async #prepareTemplateFile (svgPath) {
+/*async #prepareTemplateFile (svgPath) {
     // Leo el archivo SVG
     const svgRaw = await readFile(svgPath, { encoding: 'utf-8' })
     // Uso REGEX para extraer todas las variables del .svg
@@ -121,7 +201,6 @@ class Postercitos {
 
     // Usar fuente
     const selectedFont = this.fonts.find(font => font.name === fontFamily && font.weight === (fontWeight || 400))
-    console.log(selectedFont)
     const buffer = selectedFont.data
     const font = parse(buffer)
     // Utilidad para calcular siempre con la fuente seleccionada
@@ -216,25 +295,4 @@ class Postercitos {
         fill
       }
     }
-  }
-}
-
-// Función externa modificada para incluir kerning
-function getTextWidth(text, fontSize, font, kerning) {
-  const scale = fontSize / font.unitsPerEm;
-  let width = 0
-  const glyphs = font.stringToGlyphs(text)
-  for (let i = 0; i < glyphs.length; i++) {
-    const glyph = glyphs[i]
-    width += glyph.advanceWidth * scale
-    
-    // Si hay kerning, calcular entre pares de glifos
-    if (kerning && i < glyphs.length - 1) {
-      width += kerning
-    }
-  }
-
-  return width
-}
-
-export default Postercitos
+  }*/
