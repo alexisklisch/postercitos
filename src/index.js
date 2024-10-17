@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { XMLParser, XMLBuilder } from 'fast-xml-parser'
 import { parse } from 'opentype.js'
 import { syllabler } from './utils/syllabler.js'
+import { replaceWithVariables } from './utils/replaceWithVariables.js'
 
 // Entre 24 y 32 ms la versión 0.2
 class Postercitos {
@@ -45,47 +46,41 @@ class Postercitos {
 
     // Parsear el SVG
     const parsedSVGs = templates.map(tmplt => this.parser.parse(tmplt))
+    
+    // Transformar los <poster-textbox>
+    parsedSVGs.forEach(svgParsed => recursiveSVG(svgParsed, null, null))
+    console.log(JSON.stringify(parsedSVGs))
 
     return parsedSVGs
 
   }
-
   
 }
 
-// Utilidad para parsear las variables de un template
-const replaceWithVariables = (svg, userVars) => {
-  const regex = /\{\{([^}]+)\}\}/g
+function recursiveSVG (node, parent, keyInParent) {
 
-  const templateVars = [...svg.matchAll(regex)].reduce((acc, currMatch) => {
-    const variableStatements = currMatch[1].split(',').map(statement => statement.trim())
+  if (typeof node === 'object') {
 
-    const variableObject = variableStatements.reduce((obj, statement) => {
-      let [param, value] = statement.split(':').map(item => item.trim())
-      if (param === 'default') value = value.slice(1, -1)
-      obj[param] = value // Construir el objeto con cada parámetro
-      return obj
-    }, {})
+    for (const [key, value] of Object.entries(node)) {
+      if (key === 'poster-textbox') {
+        node[':@'].fill = 'yellow'
 
-    acc.push(variableObject)
-    return acc
-  }, [])
+        const nuevo = {
+          g: [{'#text': "Papita pal loro"}],
+          ':@': {
+            peniaca: '3232'
+          }
+        }
 
-  const userVarsEntries = Object.entries(userVars)
-  templateVars.forEach(tmpltVar => {
-    const [varName, varValue] = userVarsEntries.find(([key, value]) => key === tmpltVar.variable)
-    const wordToRegex = `:${varName}`
-    const regexWithVar = new RegExp(`\\{\\{[^{}]*${wordToRegex}[^{}]*\\}\\}`, 'g')
-    
-    const textToReplace = [...svg.matchAll(regexWithVar)].map(match => match[0])
+        if (parent && keyInParent) parent[keyInParent] = nuevo
+      }
 
-    svg = svg.replaceAll(textToReplace, varValue)
-  })
+      if (key !== ':@') recursiveSVG(value, node, key)
+    }
 
-
-  return svg
-
+  }
 }
+
 
 // Función externa modificada para incluir kerning
 function getTextWidth(text, fontSize, font, kerning) {
