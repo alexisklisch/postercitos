@@ -9,8 +9,8 @@ const justMeAgain = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/just-
 console.time('test-time')
 const postercitos= new Postercitos({
   vars: {
-    titulo: 'PitoBb',
-    body: 'Panupunixe'
+    titulo: 'Ian Luca',
+    body: 'Este es Ian Fleitas. Una eminencia'
   },
   fonts: [
     {
@@ -27,7 +27,8 @@ const postercitos= new Postercitos({
     },
   ]
 })
-const design = await postercitos.svgsFrom('./designs/01_japan_flag')
-//await writeFile('output/textix.svg', design, {encoding: 'utf-8'})
+const [design] = await postercitos.svgsFrom('./designs/01_japan_flag')
+
+await writeFile('output/textix.svg', design, {encoding: 'utf-8'})
 
 console.timeEnd('test-time')

@@ -48,39 +48,140 @@ class Postercitos {
     const parsedSVGs = templates.map(tmplt => this.parser.parse(tmplt))
     
     // Transformar los <poster-textbox>
-    parsedSVGs.forEach(svgParsed => recursiveSVG(svgParsed, null, null))
-    console.log(JSON.stringify(parsedSVGs))
+    parsedSVGs.forEach(svgParsed => this.#recursiveSVG(svgParsed, null, null))
+    // Buildear el SVG
+    const builded = parsedSVGs.map(svg => this.builder.build(svg))
+    return builded
 
-    return parsedSVGs
+  }
 
+  #recursiveSVG (node, parent, keyInParent) {
+
+    if (typeof node === 'object') {
+  
+      for (const [key, value] of Object.entries(node)) {
+        const elementAttrs = node[':@'] || {}
+        
+        if (key === 'poster-textbox') {
+          // Estableciendo variables
+          const [x, y, boxWidth, boxHeight] = (elementAttrs['poster:box-view'] || '0,0,100,100').split(',').map(Number)
+          const fontSize = Number(elementAttrs['poster:font-size']) || 16
+          const textAlign = elementAttrs['poster:text-align'] || 'left'
+          const verticalAlign = elementAttrs['poster:vertical-align'] || 'top'
+          const lineHeight = Number(elementAttrs['poster:line-height']) || 0
+          const letterSpacing = Number(elementAttrs['letter-spacing']) || 0
+          const fontFamily = elementAttrs['poster:font-family'] || 'Arial'
+          const fontWeight = Number(elementAttrs['poster:font-weight']) || 400
+          const text = value[0]['#text'] || 'undefined'
+
+          // Seleccionar fuente actual
+          const selectedFont = this.fonts.find(font => font.name === fontFamily && font.weight === fontWeight)
+          if (!selectedFont) throw new Error('<poster-textbox/> debe tener al menos una fuente válida.')
+          const buffer = selectedFont.data
+          const font = parse(buffer)
+          // Utilidad para calcular siempre con la fuente seleccionada
+          const withFontWidth = text => getTextWidth(text, fontSize, font, letterSpacing)
+          
+          // Crear un array de palabras
+          const words = text.split(' ')
+          // Array con las líneas
+          const textLines = []
+          // Linea temporar
+          let tempLine = ''
+
+          while (words.length >= 1) {
+            // selecciona y elimina la primera word[]
+            const currentWord = words.shift()
+            // Analizar nuevos espacios
+            const fullTempLineFontWidth = withFontWidth(`${tempLine} ${currentWord}`)
+            const isBiggerThanBox = fullTempLineFontWidth > boxWidth
+            
+            
+            // Si el texto es mas grande que la caja de texto...
+            if (isBiggerThanBox) {
+              // Separo en sílabas la palabra
+              const syllabes = syllabler(currentWord)
+              // Utilidad para saber siempre el temaño con las sílabas actuales
+              const currentSyllabesFontWidth = () => withFontWidth(`${tempLine} ${syllabes.join('')}-`.trim())
+              // Variable donde se guarda la/s sílaba a enviar debajo
+              let nextLineSyllabes = ''
+              
+              // Mientras que la actual palabra con guión sea más grande...
+              while (currentSyllabesFontWidth() > boxWidth) {
+                const currentSyllabe = syllabes.pop()
+                // Si la cantidad de sílabas es igual a 0
+                if (syllabes.length === 0) {
+                  // La sílaba de la siguiente línea es la palabra entera
+                  nextLineSyllabes = currentWord
+                  // Y detengo el ciclo while
+                  break
+                }
+                // Si no ocurre nada de ésto, la sílaba de la próxima línea se le suma ésta sílaba
+                nextLineSyllabes = currentSyllabe + nextLineSyllabes
+              }
+
+              words.unshift(nextLineSyllabes)
+              tempLine = `${tempLine} ${syllabes.join('') ? `${syllabes.join('')}-` : ''}`.trim()
+              textLines.push(tempLine)
+              tempLine = ''
+              nextLineSyllabes = ''
+
+            } else {
+              tempLine += ` ${currentWord}`
+              // Si es la última línea, y entra en la caja, hacer push
+              if (words.length === 0) textLines.push(tempLine.trim())
+            }
+          }
+
+          let currentX = x
+          let currentY = y
+          const pathData = []
+          const scale = fontSize / font.unitsPerEm
+
+          const AllLinesSize = textLines.length * fontSize + (textLines.length - 1) * lineHeight
+          if (verticalAlign === 'middle') currentY = y + (boxHeight - AllLinesSize) / 2
+          else if (verticalAlign === 'bottom') currentY = y + boxHeight - AllLinesSize
+          
+          textLines.forEach((line, i) => {
+            if (textAlign === 'left') currentX = x
+            else if (textAlign === 'center') currentX = x + (boxWidth - withFontWidth(line)) / 2
+            else if (textAlign === 'right') currentX = x + boxWidth - withFontWidth(line)
+
+            if (i > 0) currentY += fontSize + lineHeight
+
+            const glyphs = font.stringToGlyphs(line)
+            for (const glyph of glyphs) {
+              const glyphWidth = glyph.advanceWidth * scale
+        
+              // Obtener el path, ajustando la altura
+              const path = glyph.getPath(currentX, currentY + fontSize, fontSize)
+              pathData.push(path.toSVG())
+              currentX += glyphWidth + letterSpacing
+            }
+
+          })
+
+          const path = this.parser.parse(pathData)
+          const nativeAttrs = Object.fromEntries(Object.entries(elementAttrs).filter(([key]) => !key.includes('poster:')))
+          console.log(nativeAttrs)
+
+          const nuevo = {
+            g: path,
+            ':@': {
+              ...nativeAttrs
+            }
+          }
+  
+          if (parent && keyInParent) parent[keyInParent] = nuevo
+        }
+  
+        if (key !== ':@') this.#recursiveSVG(value, node, key)
+      }
+  
+    }
   }
   
 }
-
-function recursiveSVG (node, parent, keyInParent) {
-
-  if (typeof node === 'object') {
-
-    for (const [key, value] of Object.entries(node)) {
-      if (key === 'poster-textbox') {
-        node[':@'].fill = 'yellow'
-
-        const nuevo = {
-          g: [{'#text': "Papita pal loro"}],
-          ':@': {
-            peniaca: '3232'
-          }
-        }
-
-        if (parent && keyInParent) parent[keyInParent] = nuevo
-      }
-
-      if (key !== ':@') recursiveSVG(value, node, key)
-    }
-
-  }
-}
-
 
 // Función externa modificada para incluir kerning
 function getTextWidth(text, fontSize, font, kerning) {
@@ -106,48 +207,7 @@ export default Postercitos
 
 
 /*
-    // Leo y parseo los .svg para tenerlo de forma conveniente
-    const SVGsTemplatePromises = templatePaths.map(async (path) => this.#prepareTemplateFile(path))
-    const SVGsTemplatesResult = await Promise.allSettled(SVGsTemplatePromises).then(svg => svg)
-    const svgsTemplates = SVGsTemplatesResult.map(promise => promise.value)
-    // Convierto los templates en svgs funcionales
-    const svgsPromises = svgsTemplates.map(template => this.#drawSVG(template))
-    const svgsResult = await Promise.allSettled(svgsPromises).then(svg => svg)
-    const svgs = svgsResult.map(promise => [promise.value])
-
-    return svgs.map(svg => this.builder.build(svg))*/
-
-/*async #prepareTemplateFile (svgPath) {
-    // Leo el archivo SVG
-    const svgRaw = await readFile(svgPath, { encoding: 'utf-8' })
-    // Uso REGEX para extraer todas las variables del .svg
-    const variablesRegex = /%\{\{(.*?)\}\}%/g
-    const regexResult = svgRaw.match(variablesRegex)
-    const variablesRawArray = regexResult.map(match => match.slice(3, -3))
-    // Devuelve un objeto con fallback si lo tiene
-    const variables = variablesRawArray.map(svgVar => {
-      const haveFallback = svgVar[0] === '['
-      let rawVariable = ''
-
-      if (haveFallback) {
-        const [value, fallback] = JSON.parse(svgVar)
-        rawVariable = `%{{${value}}}%`
-        return {value, rawVariable, fallback}
-      }
-
-      rawVariable = `%{{${svgVar}}}%`
-      return {value: svgVar, rawVariable}
-
-    })
-
-    // Parsea el SVG
-    const parsedXML = this.parser.parse(svgRaw)
-
-    return {
-      content: parsedXML,
-      variables
-    }
-  }
+  
 
   async #drawSVG (svgTemplate) {
     const { content, variables } = svgTemplate

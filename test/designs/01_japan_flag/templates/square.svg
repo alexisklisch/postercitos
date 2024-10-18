@@ -26,20 +26,24 @@
   </g>
 </g>
 <poster-textbox
-  --box-view="110,50,860,100"
-  --align-text="center"
-  --vertical-align="top"
-  font-family="Jacquarda Bastarda 9"
+  poster:box-view="110,50,860,100"
+  poster:font-weight="400"
+  poster:text-align="right"
+  poster:vertical-align="top"
+  poster:font-family="Jacquarda Bastarda 9"
   fill="red"
-  font-size="128"
+  poster:font-size="128"
 >{{variable:titulo}}</poster-textbox>
 <poster-textbox
-  --box-view="552,702,450,100"
-  --align-text="center"
-  --vertical-align="top"
-  font-family="Just Me Again Down Here"
-  fill="white"
-  font-size="150"
+  poster:box-view="552,702,450,100"
+  poster:font-weight="400"
+  poster:text-align="center"
+  poster:line-height="-50"
+  poster:vertical-align="top"
+  poster:font-family="Just Me Again Down Here"
+  fill="green"
+  poster:font-size="150"
+  stroke="yellow"
 >{{variable:body, default:"Este es el cuerpo y ya"}}</poster-textbox>
 
 </svg>
