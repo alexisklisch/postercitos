@@ -26,7 +26,11 @@ class Postercitos {
     // Parsear el manifest
     const manifestRaw = await readFile(manifestPath, { encoding: 'utf-8' })
     const manifest = JSON.parse(manifestRaw)
-    const { assets, metadata, vars } = manifest
+    const { assets, metadata } = manifest
+
+    // Agregar variables intrínsecas a las variables
+    const metadataEntries = Object.entries(metadata)
+    metadataEntries.forEach(([key, value]) => this.userVars['metadata%' + key] = value)
 
     // Array con rutas de cada diseño
     const templatesFileNames = await readdir(templatesDir)
@@ -163,7 +167,6 @@ class Postercitos {
 
           const path = this.parser.parse(pathData)
           const nativeAttrs = Object.fromEntries(Object.entries(elementAttrs).filter(([key]) => !key.includes('poster:')))
-          console.log(nativeAttrs)
 
           const nuevo = {
             g: path,
