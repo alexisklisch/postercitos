@@ -10,7 +10,6 @@ console.time('test-time')
 const postercitos= new Postercitos({
   vars: {
     titulo: 'Ian Luca',
-    body: 'Esto se ve feo'
   },
   fonts: [
     {
