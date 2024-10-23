@@ -9,6 +9,9 @@
     <clipPath id="clip0_0_1">
     <rect width="1080" height="1080" fill="white"/>
     </clipPath>
+    <pattern id="pattern0_448_2" patternUnits="objectBoundingBox" width="1" height="1" viewBox="0 0 500 500">
+      <poster-image id="image0_448_2" width="500" height="500" poster:src="assets%man.jpg" />
+    </pattern>
   </defs>
 <rect width="1080" height="1080" fill="#1E1E1E"/>
 <g clip-path="url(#clip0_0_1)">
@@ -33,7 +36,7 @@
   poster:font-family="Jacquarda Bastarda 9"
   fill="red"
   poster:font-size="128"
->{{variable:titulo}}</poster-textbox>
+>{{variable:metadata%version}}</poster-textbox>
 <poster-textbox
   poster:box-view="552,702,450,100"
   poster:font-weight="400"
@@ -44,6 +47,7 @@
   fill="green"
   poster:font-size="150"
   stroke="yellow"
->{{variable:body, default:"Este es el cuerpo y ya"}}</poster-textbox>
+>{{variable:body, default:"Este es el cuerpo y ya"}}
+</poster-textbox>
 
 </svg>

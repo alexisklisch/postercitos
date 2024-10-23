@@ -10,7 +10,7 @@ console.time('test-time')
 const postercitos= new Postercitos({
   vars: {
     titulo: 'Ian Luca',
-    body: 'Este es Ian Fleitas. Una eminencia'
+    body: 'Esto se ve feo'
   },
   fonts: [
     {
