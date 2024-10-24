@@ -34,7 +34,7 @@
   poster:font-family="Jacquarda Bastarda 9"
   fill="red"
   poster:font-size="128"
->{{variable:metadata%version, condition: "2 == 4"}}</poster-textbox>
+>{{variable:metadata%version, condition: "16 * 246 + 15"}}</poster-textbox>
 <poster-textbox
   poster:box-view="552,702,450,100"
   poster:font-weight="400"

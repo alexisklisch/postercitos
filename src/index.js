@@ -9,7 +9,11 @@ import { replaceWithVariables } from './utils/replaceWithVariables.js'
 class Postercitos {
   constructor (config) {
     const { vars, fonts } = config
-    this.userVars = vars
+    // Asignar tipo de variable
+    this.vars = vars
+    const varsEntries = Object.entries(vars)
+    varsEntries.forEach(([key, value]) => this.vars['user%' + key] = value) // Todo: Borrar variables iniales
+
     this.fonts = fonts
     // Configurar parser
     const commonConfig = {preserveOrder: true, ignoreAttributes: false, attributeNamePrefix: ''}
@@ -30,7 +34,7 @@ class Postercitos {
 
     // Agregar variables intrínsecas a las variables
     const metadataEntries = Object.entries(metadata)
-    metadataEntries.forEach(([key, value]) => this.userVars['metadata%' + key] = value)
+    metadataEntries.forEach(([key, value]) => this.vars['metadata%' + key] = value)
 
     // Array con rutas de cada diseño
     const templatesFileNames = await readdir(templatesDir)
@@ -44,7 +48,7 @@ class Postercitos {
       //const templateName = templatePath.split('/').pop().split('.').slice(0, -1).join('')
       
       // Aplicar las variables del usuario al template
-      const templateWithVarsApplied = replaceWithVariables(rawTemplate, this.userVars)
+      const templateWithVarsApplied = replaceWithVariables(rawTemplate, this.vars)
       templates.push(templateWithVarsApplied)
     }
     

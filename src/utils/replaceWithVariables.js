@@ -1,4 +1,4 @@
-import { Parser } from "expr-eval"
+import { evaluateCondition } from "./evaluateCondition.js"
 
 export const replaceWithVariables = (svg, userVars) => {
   const regex = /\{\{([^}]+)\}\}/g
@@ -18,6 +18,7 @@ export const replaceWithVariables = (svg, userVars) => {
     return acc
   }, [])
 
+
   // Recorrer las variables del template
   templateVars.forEach(tmpltVar => {
     // Obtener valor de las variables del usuario o usar el valor por defecto
@@ -32,20 +33,11 @@ export const replaceWithVariables = (svg, userVars) => {
       }
     }
 
-    /*const safeEval = (expression, context) => {
-      // Crea una función que evalúa la expresión en el contexto proporcionado
-      return Function(...Object.keys(context), `return ${expression};`)(...Object.values(context));
-    }
 
     if (!!tmpltVar.condition) {
-      try {
-        const conditionResult = safeEval(tmpltVar.condition, userVars);
-        varValue = conditionResult !== false ? varValue : tmpltVar.default;
-        console.log(varValue)
-      } catch (error) {
-        console.error(`Error al evaluar la condición: ${error}`);
-      }
-    }*/
+      if (tmpltVar.condition[0] === '"') tmpltVar.condition = tmpltVar.condition.slice(1, -1)
+      const cosa = evaluateCondition(tmpltVar.condition, userVars)
+    }
 
     // Reemplazar en el SVG
     const wordToRegex = `:${tmpltVar.variable}`
