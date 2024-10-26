@@ -82,6 +82,7 @@ class Postercitos {
         if (key === 'poster-textbox') {
           // Estableciendo variables
           const [x, y, boxWidth, boxHeight] = (elementAttrs['poster:box-size'] || '0 0 100 100').split(' ').map(Number)
+          const boxStroke = elementAttrs['poster:box-stroke']
           const fontSize = Number(elementAttrs['poster:font-size']) || 16
           const textAlign = elementAttrs['poster:text-align'] || 'left'
           const verticalAlign = elementAttrs['poster:vertical-align'] || 'top'
@@ -194,7 +195,21 @@ class Postercitos {
               ...nativeAttrs
             }
           }
-  
+
+          // Si hay un box stroke, agregar el cuadrado
+          if (boxStroke) {
+            nuevo.g.unshift({
+              rect: [],
+              ':@': {
+                stroke: boxStroke,
+                fill: 'transparent',
+                x: x,
+                y: y,
+                height:boxHeight,
+                width: boxWidth
+              }})
+          }
+
           if (parent && keyInParent) parent[keyInParent] = nuevo
           continue
         }

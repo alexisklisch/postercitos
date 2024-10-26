@@ -4,39 +4,41 @@ export const replaceWithVariables = (svg, userVars) => {
   const regex = /\{\{([^}]+)\}\}/g
 
   // Extraer variables del template
-  const templateVars = [...svg.matchAll(regex)].reduce((acc, currMatch) => {
-    const variableStatements = currMatch[1].split(',').map(statement => statement.trim())
+  const templateVars = [...svg.matchAll(regex)].map(currMatch => {
+    const variableStatements = currMatch[1].trim()
+    
+    const variableObject = {}
+    
+    // Detectar `expr(...)` y extraer su contenido sin dividir por comas dentro
+    const exprMatch = variableStatements.match(/expr\(([^)]+)\)/)
+    if (exprMatch) {
+      variableObject.expr = exprMatch[1] // Extraer solo el contenido dentro de expr(...)
+    }
 
-    const variableObject = variableStatements.reduce((obj, statement) => {
-      let [param, value] = statement.split(':').map(item => item.trim())
-      if (param === 'default') value = value.slice(1, -1) // Remover las comillas de los valores por defecto
-      obj[param] = value // Construir el objeto con cada parámetro
-      return obj
-    }, {})
-
-    acc.push(variableObject)
-    return acc
-  }, [])
-
+    // Detectar `required()` como una bandera sin valor
+    if (variableStatements.includes('required()')) {
+      variableObject.required = true
+    }
+    
+    return { ...variableObject, rawText: currMatch[0] }
+  })
 
   // Recorrer las variables del template
   templateVars.forEach(tmpltVar => {
-    // Obtener valor de las variables del usuario o usar el valor por defecto
-    let varValue = evaluateCondition(tmpltVar.value, userVars)
-    // Si la variable es requerida pero no tiene valor, lanzar error
-    if (!!tmpltVar.required && !varValue) {
-      if (tmpltVar.default) {
-        varValue = tmpltVar.default
-      } else {
-        varValue = '%undefined%'
-      }
+    let varValue = undefined
+
+    // Si expr existe, evaluamos la expresión
+    if (tmpltVar.expr) {
+      varValue = evaluateCondition(tmpltVar.expr, userVars)
     }
-    // Reemplazar en el SVG
-    const wordToRegex = escapeRegExp(`:${tmpltVar.value}`)
-    const regexWithVar = new RegExp(`\\{\\{[^{}]*${wordToRegex}[^{}]*\\}\\}`, 'g')
-    
-    const [ textToReplace ] = [...svg.matchAll(regexWithVar)].map(match => match[0])
-    svg = svg.replaceAll(textToReplace, varValue || '') // Reemplazo seguro con fallback
+
+    // Si la variable es requerida y no tiene valor, lanzar error o usar default
+    if (tmpltVar.required && !varValue) {
+      varValue = '%undefined%' // o cualquier valor por defecto o de error
+    }
+
+    // Reemplazar en el SVG con el valor obtenido o un placeholder
+    svg = svg.replaceAll(tmpltVar.rawText, varValue || '')
   })
 
   return svg
