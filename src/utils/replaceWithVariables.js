@@ -10,7 +10,7 @@ export const replaceWithVariables = (svg, userVars) => {
     const variableObject = {}
     
     // Detectar `expr(...)` y extraer su contenido sin dividir por comas dentro
-    const exprMatch = variableStatements.match(/expr\(([^)]+)\)/)
+    const exprMatch = variableStatements.match(/expr\(((?:[^)(]+|\((?:[^)(]+|\([^)(]*\))*\))*)\)/)
     if (exprMatch) {
       variableObject.expr = exprMatch[1] // Extraer solo el contenido dentro de expr(...)
     }
@@ -30,6 +30,7 @@ export const replaceWithVariables = (svg, userVars) => {
     // Si expr existe, evaluamos la expresión
     if (tmpltVar.expr) {
       varValue = evaluateCondition(tmpltVar.expr, userVars)
+      console.log(varValue)
     }
 
     // Si la variable es requerida y no tiene valor, lanzar error o usar default

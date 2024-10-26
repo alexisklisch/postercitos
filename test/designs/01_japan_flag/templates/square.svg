@@ -34,7 +34,7 @@
   poster:box-stroke="green"
   fill="black"
   poster:font-size="60"
->{{expr(2 + 2 == 4 ? 'Hola' : 'Chau'), required()}}</poster-textbox>value:2 + 2 == 5 ? 'Hola' : 'Chau'
+>{{expr(2 + 2 == 4 ? 'Hola' : 'Chau'), required()}}</poster-textbox>
 <poster-textbox
   poster:box-size="552 702 450 100"
   poster:font-weight="400"
@@ -46,7 +46,7 @@
   poster:font-size="80"
   letter-spacing="-10"
   stroke="yellow"
->{{expr(cuestiones[3] ? cuestiones[2] : alfajores.negro)}}
+>{{expr(user$$alfajores.fruta.toUpperCase())}}
 </poster-textbox>
 
 </svg>
