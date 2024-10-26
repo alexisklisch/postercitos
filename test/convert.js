@@ -1,4 +1,4 @@
-import sharp from 'sharp'
 
-sharp('./output/asd.svg')
-  .toFile('./output/cositax.png')
+import { evaluateCondition } from '../src/utils/evaluateCondition.js'
+
+console.log(evaluateCondition('pis', {pis: 'pichin'}))

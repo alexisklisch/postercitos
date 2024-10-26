@@ -9,7 +9,6 @@ const justMeAgain = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/just-
 console.time('test-time')
 const postercitos= new Postercitos({
   vars: {
-    titulo: 'Ian Luca',
   },
   fonts: [
     {

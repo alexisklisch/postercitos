@@ -12,7 +12,7 @@ class Postercitos {
     // Asignar tipo de variable
     this.vars = vars
     const varsEntries = Object.entries(vars)
-    varsEntries.forEach(([key, value]) => this.vars['user%' + key] = value) // Todo: Borrar variables iniales
+    varsEntries.forEach(([key, value]) => this.vars['user$$' + key] = value) // Todo: Borrar variables iniales
 
     this.fonts = fonts
     // Configurar parser
@@ -34,7 +34,7 @@ class Postercitos {
 
     // Agregar variables intrínsecas a las variables
     const metadataEntries = Object.entries(metadata)
-    metadataEntries.forEach(([key, value]) => this.vars['metadata%' + key] = value)
+    metadataEntries.forEach(([key, value]) => this.vars['metadata$$' + key] = value)
 
     // Array con rutas de cada diseño
     const templatesFileNames = await readdir(templatesDir)
@@ -66,16 +66,22 @@ class Postercitos {
   }
 
   async #recursiveSVG (node, parent, keyInParent) {
-
+    
     if (typeof node === 'object') {
-  
+      
       for (const [key, value] of Object.entries(node)) {
+        // Si no es un elemento tipo poster, continua
+        if (!key.startsWith('poster-')) {
+          await this.#recursiveSVG(value, node, key)
+          continue
+        }
+
         const elementAttrs = node[':@'] || {}
         const nativeAttrs = Object.fromEntries(Object.entries(elementAttrs).filter(([key]) => !key.includes('poster:')))
         
         if (key === 'poster-textbox') {
           // Estableciendo variables
-          const [x, y, boxWidth, boxHeight] = (elementAttrs['poster:box-view'] || '0,0,100,100').split(',').map(Number)
+          const [x, y, boxWidth, boxHeight] = (elementAttrs['poster:box-size'] || '0 0 100 100').split(' ').map(Number)
           const fontSize = Number(elementAttrs['poster:font-size']) || 16
           const textAlign = elementAttrs['poster:text-align'] || 'left'
           const verticalAlign = elementAttrs['poster:vertical-align'] || 'top'
@@ -83,7 +89,12 @@ class Postercitos {
           const letterSpacing = Number(elementAttrs['letter-spacing']) || 0
           const fontFamily = elementAttrs['poster:font-family'] || 'Arial'
           const fontWeight = Number(elementAttrs['poster:font-weight']) || 400
-          const text = value[0]['#text'] || 'undefined'
+          const text = String(value[0]['#text'])
+
+          if (text === '%undefined%') {
+            parent[keyInParent] = []
+            continue
+          }
 
           // Seleccionar fuente actual
           const selectedFont = this.fonts.find(font => font.name === fontFamily && font.weight === fontWeight)
@@ -110,6 +121,7 @@ class Postercitos {
             
             // Si el texto es mas grande que la caja de texto...
             if (isBiggerThanBox) {
+              console.log('Llegué', currentWord)
               // Separo en sílabas la palabra
               const syllabes = syllabler(currentWord)
               // Utilidad para saber siempre el temaño con las sílabas actuales
@@ -143,6 +155,8 @@ class Postercitos {
               if (words.length === 0) textLines.push(tempLine.trim())
             }
           }
+
+
 
           let currentX = x
           let currentY = y
@@ -182,6 +196,7 @@ class Postercitos {
           }
   
           if (parent && keyInParent) parent[keyInParent] = nuevo
+          continue
         }
 
         if (key === 'poster-image') {
@@ -204,7 +219,7 @@ class Postercitos {
           }
 
           if (parent && keyInParent) parent[keyInParent] = imgConstructor
-
+          continue
         }
   
         if (key !== ':@') await this.#recursiveSVG(value, node, key)

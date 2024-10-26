@@ -22,30 +22,26 @@ export const replaceWithVariables = (svg, userVars) => {
   // Recorrer las variables del template
   templateVars.forEach(tmpltVar => {
     // Obtener valor de las variables del usuario o usar el valor por defecto
-    let varValue = userVars[tmpltVar.variable] || tmpltVar.default
-
+    let varValue = evaluateCondition(tmpltVar.value, userVars)
     // Si la variable es requerida pero no tiene valor, lanzar error
     if (!!tmpltVar.required && !varValue) {
       if (tmpltVar.default) {
         varValue = tmpltVar.default
       } else {
-        throw new Error(`La variable ${tmpltVar.variable} es requerida y no tiene valor`)
+        varValue = '%undefined%'
       }
     }
-
-
-    if (!!tmpltVar.condition) {
-      if (tmpltVar.condition[0] === '"') tmpltVar.condition = tmpltVar.condition.slice(1, -1)
-      const cosa = evaluateCondition(tmpltVar.condition, userVars)
-    }
-
     // Reemplazar en el SVG
-    const wordToRegex = `:${tmpltVar.variable}`
+    const wordToRegex = escapeRegExp(`:${tmpltVar.value}`)
     const regexWithVar = new RegExp(`\\{\\{[^{}]*${wordToRegex}[^{}]*\\}\\}`, 'g')
     
-    const textToReplace = [...svg.matchAll(regexWithVar)].map(match => match[0])
+    const [ textToReplace ] = [...svg.matchAll(regexWithVar)].map(match => match[0])
     svg = svg.replaceAll(textToReplace, varValue || '') // Reemplazo seguro con fallback
   })
 
   return svg
+}
+
+const escapeRegExp = (string) => {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // Escapa todos los caracteres especiales
 }
