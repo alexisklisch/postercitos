@@ -6,9 +6,20 @@ const jacquardaBastarda = await fetch('https://cdn.jsdelivr.net/fontsource/fonts
 const justMeAgain = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/just-me-again-down-here@latest/latin-400-normal.ttf')
   .then(data => data.arrayBuffer())
 
+
 console.time('test-time')
 const postercitos= new Postercitos({
   vars: {
+    alfajores: {
+      negro: 'Riquísimo',
+      blanco: 'Está bien',
+      fruta: 'Que asquisimo'
+    },
+    cuestiones: [
+      'primera',
+      'segunda',
+      'tercera'
+    ]
   },
   fonts: [
     {
