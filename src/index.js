@@ -4,6 +4,7 @@ import { XMLParser, XMLBuilder } from 'fast-xml-parser'
 import { parse } from 'opentype.js'
 import { syllabler } from './utils/syllabler.js'
 import { replaceWithVariables } from './utils/replaceWithVariables.js'
+import { evaluateCondition } from './utils/evaluateCondition.js'
 
 // Entre 24 y 32 ms la versión 0.2
 class Postercitos {
@@ -19,6 +20,14 @@ class Postercitos {
     const commonConfig = {preserveOrder: true, ignoreAttributes: false, attributeNamePrefix: ''}
     this.parser = new XMLParser(commonConfig)
     this.builder = new XMLBuilder(commonConfig)
+
+    /*
+      BORRAR PRONTO
+    */
+    this.processedNodes = new Set()
+    /*
+      BORRAR PRONTO
+    */
   }
 
   async svgsFrom (designPath, {batch = false} = {}) {
@@ -70,15 +79,25 @@ class Postercitos {
     if (typeof node === 'object') {
       
       for (const [key, value] of Object.entries(node)) {
-        // Si no es un elemento tipo poster, continua
-        if (!key.startsWith('poster-')) {
-          await this.#recursiveSVG(value, node, key)
-          continue
-        }
-
         const elementAttrs = node[':@'] || {}
         const nativeAttrs = Object.fromEntries(Object.entries(elementAttrs).filter(([key]) => !key.includes('poster:')))
-        
+
+        const conditionAttr = elementAttrs['poster:condition']
+        if (!!conditionAttr && !this.processedNodes.has(node)) {
+          this.processedNodes.add(node) // Marcar el nodo como procesado
+          const result = !!evaluateCondition(conditionAttr, this.vars)
+          
+          if (!result) {
+            parent[keyInParent] = []
+            continue
+          }
+
+          // Crear una copia de elementAttrs sin 'poster:condition'
+           node[':@'] = Object.fromEntries(
+            Object.entries(elementAttrs).filter(([key]) => key !== 'poster:condition')
+           )
+        }
+
         if (key === 'poster-textbox') {
           // Estableciendo variables
           const [x, y, boxWidth, boxHeight] = (elementAttrs['poster:box-size'] || '0 0 100 100').split(' ').map(Number)
@@ -122,7 +141,6 @@ class Postercitos {
             
             // Si el texto es mas grande que la caja de texto...
             if (isBiggerThanBox) {
-              console.log('Llegué', currentWord)
               // Separo en sílabas la palabra
               const syllabes = syllabler(currentWord)
               // Utilidad para saber siempre el temaño con las sílabas actuales
