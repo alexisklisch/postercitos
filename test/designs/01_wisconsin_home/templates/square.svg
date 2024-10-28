@@ -1,0 +1,23 @@
+<svg width="1080" height="1080" viewBox="0 0 1080 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Definición del gradiente diagonal -->
+    <linearGradient id="gradienteVerde" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="objectBoundingBox">
+      <stop offset="0%" stop-color="#CA1737"/>
+      <stop offset="100%" stop-color="#650B1C"/>
+    </linearGradient>
+  </defs>
+
+  <image href="data:image/jpeg;base64,{{expr(imagenCasa)}}" width="1080" height="611" preserveAspectRatio="xMidYMid slice"/>
+  <g>
+    <rect y="611" width="1080" height="469" fill="#eaeaea"/> <!-- Fondo blanco -->
+    <g> <!-- Precio -->
+      <rect y="545" width="355" height="161" fill="#CA1737"/>
+      <polygon points="489.5,545 434,611 560,611" fill="#650B1C"/>
+      <polygon points="354,545 354,707 490,545" fill="#CA1737"/>
+    </g>
+
+    <g>
+      <polygon points="434,610 700,1080 1080,1080 1080,610" fill="url(#gradienteVerde)"/>
+    </g>
+  </g>
+</svg>

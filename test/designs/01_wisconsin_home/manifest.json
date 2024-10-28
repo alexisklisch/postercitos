@@ -1,0 +1,13 @@
+{
+  "versionCode": "v0",
+  "metadata": {
+    "author": "Alexis Fleitas Klisch",
+    "name": "Appleton Example 1",
+    "tagname": "appleton_example_1",
+    "version": "0.0.0",
+    "lastUpdate": "2024-10-28T20:00:40.487Z"
+  },
+  "assets": {
+    "images": ["home.jpg"]
+  }
+}

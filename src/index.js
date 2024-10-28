@@ -21,13 +21,7 @@ class Postercitos {
     this.parser = new XMLParser(commonConfig)
     this.builder = new XMLBuilder(commonConfig)
 
-    /*
-      BORRAR PRONTO
-    */
     this.processedNodes = new Set()
-    /*
-      BORRAR PRONTO
-    */
   }
 
   async svgsFrom (designPath, {batch = false} = {}) {
