@@ -99,16 +99,21 @@ class Postercitos {
           const fontSize = Number(elementAttrs['poster:font-size']) || 16
           const textAlign = elementAttrs['poster:text-align'] || 'left'
           const verticalAlign = elementAttrs['poster:vertical-align'] || 'top'
+          const textTransform = elementAttrs['poster:text-transform'] || 'none'
           const lineHeight = Number(elementAttrs['poster:line-height']) || 0
           const letterSpacing = Number(elementAttrs['letter-spacing']) || 0
           const fontFamily = elementAttrs['poster:font-family'] || 'Arial'
           const fontWeight = Number(elementAttrs['poster:font-weight']) || 400
-          const text = String(value[0]['#text'])
+          let text = String(value[0]['#text'])
 
           if (text === '%undefined%') {
             parent[keyInParent] = []
             continue
           }
+
+          if (textTransform === 'none') {}
+          else if (textTransform === 'lowercase') text = text.toLowerCase()
+          else if (textTransform === 'uppercase') text = text.toUpperCase()
 
           // Seleccionar fuente actual
           const selectedFont = this.fonts.find(font => font.name === fontFamily && font.weight === fontWeight)

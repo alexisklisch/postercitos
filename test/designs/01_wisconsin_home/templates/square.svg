@@ -14,9 +14,20 @@
       <rect y="545" width="355" height="161" fill="#CA1737"/>
       <polygon points="489.5,545 434,611 560,611" fill="#650B1C"/>
       <polygon points="354,545 354,707 490,545" fill="#CA1737"/>
+      <poster-textbox
+        poster:font-family="Montserrat"
+        poster:font-weight="500"
+        poster:box-size="0 545 355 50"
+        poster:font-size="24"
+        poster:text-align="center"
+        poster:vertical-align="bottom"
+        poster:box-stroke="lime"
+        poster:text-transform="uppercase"
+        fill="white"
+      >La vida es así</poster-textbox>
     </g>
 
-    <g>
+    <g> <!-- Info derecha -->
       <polygon points="434,610 700,1080 1080,1080 1080,610" fill="url(#gradienteVerde)"/>
     </g>
   </g>

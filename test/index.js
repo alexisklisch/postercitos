@@ -1,7 +1,7 @@
 import Postercitos from 'postercitos'
 import { readFile, writeFile } from 'node:fs/promises'
 
-const jacquardaBastarda = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/jacquarda-bastarda-9@latest/latin-400-normal.ttf')
+const montserrat500 = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/montserrat@latest/latin-500-normal.ttf')
   .then(data => data.arrayBuffer())
 const justMeAgain = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/just-me-again-down-here@latest/latin-400-normal.ttf')
   .then(data => data.arrayBuffer())
@@ -16,9 +16,9 @@ const postercitos= new Postercitos({
   },
   fonts: [
     {
-      name: 'Jacquarda Bastarda 9',
-      data: jacquardaBastarda,
-      weight: 400,
+      name: 'Montserrat',
+      data: montserrat500,
+      weight: 500,
       style: 'normal'
     },
     {
@@ -30,7 +30,7 @@ const postercitos= new Postercitos({
   ]
 })
 const [design] = await postercitos.svgsFrom('./designs/01_wisconsin_home')
-
+console.log(design)
 await writeFile('output/01_wisconsin_home.svg', design, {encoding: 'utf-8'})
 
 console.timeEnd('test-time')
