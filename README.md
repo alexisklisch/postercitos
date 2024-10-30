@@ -65,3 +65,8 @@
   <image xlink:href="data:image/jpeg;base64,/9j/4AAQSk...(base64)" width="100%" height="100%" clip-path="url(#circleClip)" preserveAspectRatio="xMidYMid slice"/>
 </svg>
 ```
+
+## To do
+
+- Hacer que las imágenes se embeban al final del parse, porque si tiene que parsear la imagen embebida, tarda más
+- Unir distintos textos con distintos formatos. Algunas ideas: `<poster-paragraph/>` `\<poster-text/>`
