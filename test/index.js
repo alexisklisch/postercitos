@@ -1,43 +1,52 @@
 import Postercitos from 'postercitos'
-import { writeFile } from 'node:fs/promises'
+import { readFile, writeFile } from 'node:fs/promises'
 
-const jacquardaBastarda = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/jacquarda-bastarda-9@latest/latin-400-normal.ttf')
+const montserrat400 = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/montserrat@latest/latin-400-normal.ttf')
   .then(data => data.arrayBuffer())
-const justMeAgain = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/just-me-again-down-here@latest/latin-400-normal.ttf')
+const montserrat500 = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/montserrat@latest/latin-500-normal.ttf')
   .then(data => data.arrayBuffer())
+const montserrat600 = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/montserrat@latest/latin-600-normal.ttf')
+  .then(data => data.arrayBuffer())
+const montserrat700 = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/montserrat@latest/latin-700-normal.ttf')
+  .then(data => data.arrayBuffer())
+
+const homeImage = await readFile('designs/01_wisconsin_home/assets/images/home.jpg', {encoding: 'base64'})
+
 
 
 console.time('test-time')
 const postercitos= new Postercitos({
   vars: {
-    alfajores: {
-      negro: 'Riquísimo',
-      blanco: 'Está bien',
-      fruta: 'Que asquisimo'
-    },
-    cuestiones: [
-      'primera',
-      'segunda',
-      'tercera'
-    ]
+    imagenCasa: homeImage
   },
   fonts: [
     {
-      name: 'Jacquarda Bastarda 9',
-      data: jacquardaBastarda,
+      name: 'Montserrat',
+      data: montserrat400,
       weight: 400,
       style: 'normal'
     },
     {
-      name: 'Just Me Again Down Here',
-      data: justMeAgain,
-      weight: 400,
+      name: 'Montserrat',
+      data: montserrat500,
+      weight: 500,
+      style: 'normal'
+    },
+    {
+      name: 'Montserrat',
+      data: montserrat600,
+      weight: 600,
+      style: 'normal'
+    },
+    {
+      name: 'Montserrat',
+      data: montserrat700,
+      weight: 700,
       style: 'normal'
     },
   ]
 })
-const [design] = await postercitos.svgsFrom('./designs/01_japan_flag')
-
-await writeFile('output/textix.svg', design, {encoding: 'utf-8'})
+const [design] = await postercitos.svgsFrom('./designs/01_wisconsin_home')
+await writeFile('output/01_wisconsin_home.svg', design, {encoding: 'utf-8'})
 
 console.timeEnd('test-time')

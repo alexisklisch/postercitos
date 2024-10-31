@@ -1,0 +1,105 @@
+<svg width="1080" height="1080" viewBox="0 0 1080 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Definición del gradiente diagonal -->
+    <linearGradient id="fondoGradiente" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="objectBoundingBox">
+      <stop offset="0%" stop-color="#CA1737"/>
+      <stop offset="100%" stop-color="#650B1C"/>
+    </linearGradient>
+
+    <!-- Definición del filtro de sombra -->
+    <filter id="sombraRoja" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="5" dy="5" stdDeviation="8" flood-color="#650B1C" flood-opacity="0.7"/>
+    </filter>
+  </defs>
+
+  <image href="data:image/jpeg;base64,{{expr(user$$imagenCasa)}}" width="1080" height="611" preserveAspectRatio="xMidYMid slice"/>
+  <g>
+    <rect y="611" width="1080" height="469" fill="#eaeaea"/> <!-- Fondo blanco -->
+    <g> <!-- Precio -->
+      <polygon points="0,545 0,706 355,706 490,545" fill="{{expr(user$$colors?.gradient1 || template$$colors.gradient1)}}" filter="url(#sombraRoja)"/>
+      <polygon points="489.5,545 434,611 560,611" fill="{{expr(user$$colors?.gradient2 || template$$colors.gradient2)}}"/>
+      <poster-textbox
+        poster:font-family="Montserrat"
+        poster:font-weight="500"
+        poster:box-size="30 545 370 66"
+        poster:font-size="20"
+        poster:vertical-align="bottom"
+        poster:text-transform="uppercase"
+        fill="white"
+      >Precio de la publicación</poster-textbox>
+      <poster-textbox
+        poster:font-family="Montserrat"
+        poster:font-weight="700"
+        poster:box-size="30 610 370 95"
+        poster:font-size="46"
+        poster:text-transform="uppercase"
+        fill="#F5F5F5"
+      >USD 220.000</poster-textbox>
+    </g>
+
+    <g> <!-- Info izquierda -->
+      <poster-textbox
+        poster:font-family="Montserrat"
+        poster:font-weight="600"
+        poster:box-size="30 730 450 65"
+        poster:font-size="30"
+        poster:line-height="5"
+        fill="#383838"
+      >Departamento en venta - 3 ambientes - Financiamiento</poster-textbox>
+    </g>
+
+    <g> <!-- Info derecha -->
+      <polygon points="434,610 700,1080 1080,1080 1080,610" fill="url(#fondoGradiente)"/>
+      
+      <g> <!-- Logo inmobiliaria -->
+        <circle cy="618" cx="900" r="100" fill="#F5F5F5"/>
+        <rect y="550" x="830" width="140" height="140" stroke="red" />
+      </g>
+
+      <g> <!-- Logo inmobiliaria -->
+
+        <g> <!-- Features: ambientes -->
+          <circle cx="45" cy="846" r="6" fill="#CA1737"/>
+          <poster-textbox
+            poster:font-family="Montserrat"
+            poster:font-weight="400"
+            poster:box-size="62 830 225 26"
+            poster:font-size="26"
+            fill="#383838"
+          >4 ambientes</poster-textbox>
+        </g>
+        <g> <!-- Features: dormitorios -->
+          <circle cx="45" cy="896" r="6" fill="#CA1737"/>
+          <poster-textbox
+            poster:font-family="Montserrat"
+            poster:font-weight="400"
+            poster:box-size="62 880 225 26"
+            poster:font-size="26"
+            fill="#383838"
+          >3 dormitorios</poster-textbox>
+        </g>
+        <g> <!-- Features: pileta -->
+          <circle cx="305" cy="846" r="6" fill="#CA1737"/>
+          <poster-textbox
+            poster:font-family="Montserrat"
+            poster:font-weight="400"
+            poster:box-size="322 830 225 26"
+            poster:font-size="26"
+            fill="#383838"
+          >Pileta</poster-textbox>
+        </g>
+        <g> <!-- Features: quincho -->
+          <circle cx="305" cy="896" r="6" fill="#CA1737"/>
+          <poster-textbox
+            poster:font-family="Montserrat"
+            poster:font-weight="400"
+            poster:box-size="322 880 225 26"
+            poster:font-size="26"
+            fill="#383838"
+          >Quincho</poster-textbox>
+        </g>
+
+      </g>
+    </g> 
+  </g>
+</svg>

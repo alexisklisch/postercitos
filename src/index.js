@@ -4,21 +4,26 @@ import { XMLParser, XMLBuilder } from 'fast-xml-parser'
 import { parse } from 'opentype.js'
 import { syllabler } from './utils/syllabler.js'
 import { replaceWithVariables } from './utils/replaceWithVariables.js'
+import { evaluateCondition } from './utils/evaluateCondition.js'
 
 // Entre 24 y 32 ms la versión 0.2
 class Postercitos {
   constructor (config) {
     const { vars, fonts } = config
     // Asignar tipo de variable
-    this.vars = vars
-    const varsEntries = Object.entries(vars)
-    varsEntries.forEach(([key, value]) => this.vars['user$$' + key] = value) // Todo: Borrar variables iniales
+    const userVarsEntries = Object.entries(vars)
+    this.vars = userVarsEntries.reduce((prev, [key, value]) => {
+      prev['user$$' + key] = value
+      return prev
+    }, {})
 
     this.fonts = fonts
     // Configurar parser
     const commonConfig = {preserveOrder: true, ignoreAttributes: false, attributeNamePrefix: ''}
     this.parser = new XMLParser(commonConfig)
     this.builder = new XMLBuilder(commonConfig)
+
+    this.processedNodes = new Set()
   }
 
   async svgsFrom (designPath, {batch = false} = {}) {
@@ -30,8 +35,11 @@ class Postercitos {
     // Parsear el manifest
     const manifestRaw = await readFile(manifestPath, { encoding: 'utf-8' })
     const manifest = JSON.parse(manifestRaw)
-    const { assets, metadata } = manifest
+    const { assets, metadata, variables } = manifest
 
+    // Agregar variables del manifest
+    const templateVarsEntries = Object.entries(variables || {})
+    templateVarsEntries.forEach(([key, value]) => this.vars['template$$' + key] = value)
     // Agregar variables intrínsecas a las variables
     const metadataEntries = Object.entries(metadata)
     metadataEntries.forEach(([key, value]) => this.vars['metadata$$' + key] = value)
@@ -41,7 +49,7 @@ class Postercitos {
     const templatePaths = templatesFileNames.map(file => join(templatesDir, file))
 
     const templates = []
-    
+
     // Aplicar variables
     for (const templatePath of templatePaths) {
       let rawTemplate = await readFile(templatePath, {encoding: 'utf-8'})
@@ -78,7 +86,23 @@ class Postercitos {
 
         const elementAttrs = node[':@'] || {}
         const nativeAttrs = Object.fromEntries(Object.entries(elementAttrs).filter(([key]) => !key.includes('poster:')))
-        
+
+        const conditionAttr = elementAttrs['poster:condition']
+        if (!!conditionAttr && !this.processedNodes.has(node)) {
+          this.processedNodes.add(node) // Marcar el nodo como procesado
+          const result = !!evaluateCondition(conditionAttr, this.vars)
+          
+          if (!result) {
+            parent[keyInParent] = []
+            continue
+          }
+
+          // Crear una copia de elementAttrs sin 'poster:condition'
+           node[':@'] = Object.fromEntries(
+            Object.entries(elementAttrs).filter(([key]) => key !== 'poster:condition')
+           )
+        }
+
         if (key === 'poster-textbox') {
           // Estableciendo variables
           const [x, y, boxWidth, boxHeight] = (elementAttrs['poster:box-size'] || '0 0 100 100').split(' ').map(Number)
@@ -86,16 +110,21 @@ class Postercitos {
           const fontSize = Number(elementAttrs['poster:font-size']) || 16
           const textAlign = elementAttrs['poster:text-align'] || 'left'
           const verticalAlign = elementAttrs['poster:vertical-align'] || 'top'
+          const textTransform = elementAttrs['poster:text-transform'] || 'none'
           const lineHeight = Number(elementAttrs['poster:line-height']) || 0
           const letterSpacing = Number(elementAttrs['letter-spacing']) || 0
           const fontFamily = elementAttrs['poster:font-family'] || 'Arial'
           const fontWeight = Number(elementAttrs['poster:font-weight']) || 400
-          const text = String(value[0]['#text'])
+          let text = String(value[0]['#text'])
 
           if (text === '%undefined%') {
             parent[keyInParent] = []
             continue
           }
+
+          if (textTransform === 'none') {}
+          else if (textTransform === 'lowercase') text = text.toLowerCase()
+          else if (textTransform === 'uppercase') text = text.toUpperCase()
 
           // Seleccionar fuente actual
           const selectedFont = this.fonts.find(font => font.name === fontFamily && font.weight === fontWeight)

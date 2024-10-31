@@ -30,7 +30,6 @@ export const replaceWithVariables = (svg, userVars) => {
     // Si expr existe, evaluamos la expresión
     if (tmpltVar.expr) {
       varValue = evaluateCondition(tmpltVar.expr, userVars)
-      console.log(varValue)
     }
 
     // Si la variable es requerida y no tiene valor, lanzar error o usar default
