@@ -21,7 +21,7 @@ const postercitos= new Postercitos({
   fonts: [
     {
       name: 'Montserrat',
-      data: montserrat500,
+      data: montserrat400,
       weight: 400,
       style: 'normal'
     },
@@ -46,7 +46,6 @@ const postercitos= new Postercitos({
   ]
 })
 const [design] = await postercitos.svgsFrom('./designs/01_wisconsin_home')
-console.log(design)
 await writeFile('output/01_wisconsin_home.svg', design, {encoding: 'utf-8'})
 
 console.timeEnd('test-time')

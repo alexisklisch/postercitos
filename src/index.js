@@ -11,9 +11,11 @@ class Postercitos {
   constructor (config) {
     const { vars, fonts } = config
     // Asignar tipo de variable
-    this.vars = vars
-    const varsEntries = Object.entries(vars)
-    varsEntries.forEach(([key, value]) => this.vars['user$$' + key] = value) // Todo: Borrar variables iniales
+    const userVarsEntries = Object.entries(vars)
+    this.vars = userVarsEntries.reduce((prev, [key, value]) => {
+      prev['user$$' + key] = value
+      return prev
+    }, {})
 
     this.fonts = fonts
     // Configurar parser
@@ -33,8 +35,11 @@ class Postercitos {
     // Parsear el manifest
     const manifestRaw = await readFile(manifestPath, { encoding: 'utf-8' })
     const manifest = JSON.parse(manifestRaw)
-    const { assets, metadata } = manifest
+    const { assets, metadata, variables } = manifest
 
+    // Agregar variables del manifest
+    const templateVarsEntries = Object.entries(variables || {})
+    templateVarsEntries.forEach(([key, value]) => this.vars['template$$' + key] = value)
     // Agregar variables intrínsecas a las variables
     const metadataEntries = Object.entries(metadata)
     metadataEntries.forEach(([key, value]) => this.vars['metadata$$' + key] = value)
@@ -44,7 +49,7 @@ class Postercitos {
     const templatePaths = templatesFileNames.map(file => join(templatesDir, file))
 
     const templates = []
-    
+
     // Aplicar variables
     for (const templatePath of templatePaths) {
       let rawTemplate = await readFile(templatePath, {encoding: 'utf-8'})

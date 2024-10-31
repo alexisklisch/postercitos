@@ -9,5 +9,11 @@
   },
   "assets": {
     "images": ["home.jpg"]
+  },
+  "variables": {
+    "colors": {
+      "gradient1": "#CA1737",
+      "gradient2": "#650B1C"
+    }
   }
 }

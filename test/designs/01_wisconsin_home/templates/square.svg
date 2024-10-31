@@ -12,12 +12,12 @@
     </filter>
   </defs>
 
-  <image href="data:image/jpeg;base64,{{expr(imagenCasa)}}" width="1080" height="611" preserveAspectRatio="xMidYMid slice"/>
+  <image href="data:image/jpeg;base64,{{expr(user$$imagenCasa)}}" width="1080" height="611" preserveAspectRatio="xMidYMid slice"/>
   <g>
     <rect y="611" width="1080" height="469" fill="#eaeaea"/> <!-- Fondo blanco -->
     <g> <!-- Precio -->
-      <polygon points="0,545 0,706 355,706 490,545" fill="#CA1737" filter="url(#sombraRoja)"/>
-      <polygon points="489.5,545 434,611 560,611" fill="#650B1C"/>
+      <polygon points="0,545 0,706 355,706 490,545" fill="{{expr(user$$colors?.gradient1 || template$$colors.gradient1)}}" filter="url(#sombraRoja)"/>
+      <polygon points="489.5,545 434,611 560,611" fill="{{expr(user$$colors?.gradient2 || template$$colors.gradient2)}}"/>
       <poster-textbox
         poster:font-family="Montserrat"
         poster:font-weight="500"
