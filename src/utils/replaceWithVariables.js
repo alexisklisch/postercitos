@@ -1,14 +1,19 @@
 import { evaluateCondition } from "./evaluateCondition.js"
 
-export const replaceWithVariables = (svg, userVars) => {
+export const replaceWithVariables = (svg, userVars, isSecond) => {
   const regex = /\{\{([^}]+)\}\}/g
 
+ 
   // Extraer variables del template
   const templateVars = [...svg.matchAll(regex)].map(currMatch => {
     const variableStatements = currMatch[1].trim()
-    
     const variableObject = {}
     
+    // Detectar `later()` como una bandera sin valor
+    if (variableStatements.includes('later()')) {
+      variableObject.later = true
+    }
+
     // Detectar `expr(...)` y extraer su contenido sin dividir por comas dentro
     const exprMatch = variableStatements.match(/expr\(((?:[^)(]+|\((?:[^)(]+|\([^)(]*\))*\))*)\)/)
     if (exprMatch) {
@@ -20,16 +25,25 @@ export const replaceWithVariables = (svg, userVars) => {
       variableObject.required = true
     }
     
-    return { ...variableObject, rawText: currMatch[0] }
+    return { ...variableObject, rawText: currMatch[0], replaceLater: variableObject.later || false }
   })
 
   // Recorrer las variables del template
   templateVars.forEach(tmpltVar => {
+    if (tmpltVar.later ) {
+      svg = svg.replaceAll(tmpltVar.rawText, tmpltVar.rawText.replace('later()', ''))
+      return
+    }
+
     let varValue = undefined
 
     // Si expr existe, evaluamos la expresión
     if (tmpltVar.expr) {
       varValue = evaluateCondition(tmpltVar.expr, userVars)
+      if (isSecond) {
+        console.log('Es el segundo!')
+        console.log(userVars)
+      }
     }
 
     // Si la variable es requerida y no tiene valor, lanzar error o usar default

@@ -8,6 +8,8 @@ import { evaluateCondition } from './utils/evaluateCondition.js'
 
 // Entre 24 y 32 ms la versión 0.2
 class Postercitos {
+  #processedNodes = new Set()
+
   constructor (config) {
     const { vars, fonts } = config
     // Asignar tipo de variable
@@ -23,7 +25,6 @@ class Postercitos {
     this.parser = new XMLParser(commonConfig)
     this.builder = new XMLBuilder(commonConfig)
 
-    this.processedNodes = new Set()
   }
 
   async svgsFrom (designPath, {batch = false} = {}) {
@@ -67,8 +68,13 @@ class Postercitos {
     for (const parsed of parsedSVGs) {
       await this.#recursiveSVG(parsed, null, null)
     }
-    // Buildear el SVG
-    const builded = parsedSVGs.map(svg => this.builder.build(svg))
+
+    // Buildear aplicando variables later()
+    const builded = parsedSVGs.map(svg => {
+      const build = this.builder.build(svg).replaceAll('&apos;', "'")
+      return replaceWithVariables(build, this.vars, true)
+    })
+
     return builded
 
   }
@@ -88,8 +94,8 @@ class Postercitos {
         const nativeAttrs = Object.fromEntries(Object.entries(elementAttrs).filter(([key]) => !key.includes('poster:')))
 
         const conditionAttr = elementAttrs['poster:condition']
-        if (!!conditionAttr && !this.processedNodes.has(node)) {
-          this.processedNodes.add(node) // Marcar el nodo como procesado
+        if (!!conditionAttr && !this.#processedNodes.has(node)) {
+          this.#processedNodes.add(node) // Marcar el nodo como procesado
           const result = !!evaluateCondition(conditionAttr, this.vars)
           
           if (!result) {
@@ -151,7 +157,6 @@ class Postercitos {
             
             // Si el texto es mas grande que la caja de texto...
             if (isBiggerThanBox) {
-              console.log('Llegué', currentWord)
               // Separo en sílabas la palabra
               const syllabes = syllabler(currentWord)
               // Utilidad para saber siempre el temaño con las sílabas actuales

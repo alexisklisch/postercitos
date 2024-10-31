@@ -12,7 +12,7 @@
     </filter>
   </defs>
 
-  <image href="data:image/jpeg;base64,{{expr(user$$imagenCasa)}}" width="1080" height="611" preserveAspectRatio="xMidYMid slice"/>
+  <image href="data:image/jpeg;base64,{{expr(user$$imagenCasa), later()}}" width="1080" height="611" preserveAspectRatio="xMidYMid slice"/>
   <g>
     <rect y="611" width="1080" height="469" fill="#eaeaea"/> <!-- Fondo blanco -->
     <g> <!-- Precio -->
@@ -46,6 +46,68 @@
         poster:line-height="5"
         fill="#383838"
       >Departamento en venta - 3 ambientes - Financiamiento</poster-textbox>
+
+      <g> <!-- Features -->
+
+        <g> <!-- Features: ambientes -->
+          <circle cx="30" cy="846" r="6" fill="#CA1737"/>
+          <poster-textbox
+            poster:font-family="Montserrat"
+            poster:font-weight="400"
+            poster:box-size="47 830 225 26"
+            poster:font-size="26"
+            fill="#383838"
+          >4 ambientes</poster-textbox>
+        </g>
+        <g> <!-- Features: dormitorios -->
+          <circle cx="30" cy="896" r="6" fill="#CA1737"/>
+          <poster-textbox
+            poster:font-family="Montserrat"
+            poster:font-weight="400"
+            poster:box-size="47 880 225 26"
+            poster:font-size="26"
+            fill="#383838"
+          >3 dormitorios</poster-textbox>
+        </g>
+        <g> <!-- Features: pileta -->
+          <circle cx="290" cy="846" r="6" fill="#CA1737"/>
+          <poster-textbox
+            poster:font-family="Montserrat"
+            poster:font-weight="400"
+            poster:box-size="307 830 225 26"
+            poster:font-size="26"
+            fill="#383838"
+          >Pileta</poster-textbox>
+        </g>
+        <g> <!-- Features: quincho -->
+          <circle cx="290" cy="896" r="6" fill="#CA1737"/>
+          <poster-textbox
+            poster:font-family="Montserrat"
+            poster:font-weight="400"
+            poster:box-size="307 880 225 26"
+            poster:font-size="26"
+            fill="#383838"
+          >Quincho</poster-textbox>
+        </g>
+
+      </g>
+
+      <g> <!-- Footer left -->
+        <path
+          d="M0.999418 0.755397C0.990502 0.823149 0.957228 0.885339 0.905811 0.930352C0.854394 0.975365 0.788349 1.00012 0.720013 1C0.323006 1 4.5244e-07 0.676996 4.5244e-07 0.279993C-0.000122049 0.211656 0.0246352 0.145612 0.0696483 0.0941956C0.114661 0.0427787 0.176852 0.00950531 0.244605 0.000589888C0.261738 -0.00150209 0.279088 0.002003 0.294065 0.0105819C0.309042 0.0191608 0.320843 0.0323534 0.327706 0.0481903L0.433308 0.283943V0.284543C0.438562 0.296665 0.440732 0.309901 0.439624 0.323067C0.438516 0.336233 0.434165 0.348919 0.426958 0.359993C0.426058 0.361343 0.425108 0.362593 0.424108 0.363843L0.320006 0.487245C0.357457 0.563345 0.437058 0.642246 0.514159 0.679796L0.635861 0.576245C0.637057 0.575241 0.638309 0.574306 0.639611 0.573445C0.650676 0.566066 0.663407 0.561561 0.676651 0.560338C0.689894 0.559116 0.703234 0.561215 0.715463 0.566445L0.716113 0.566745L0.951667 0.672296C0.967532 0.679135 0.980757 0.690926 0.989364 0.705905C0.997971 0.720884 1.0015 0.738247 0.999418 0.755397Z"
+          transform="translate(30,980) scale(42)"
+          fill="{{expr(template$$colors.gradient1)}}"/>
+
+        <poster-textbox
+            poster:font-family="Montserrat"
+            poster:font-weight="700"
+            poster:box-size="90 980 400 20"
+            poster:box-stroke="lime"
+            poster:font-size="20"
+            poster:text-transform="uppercase"
+            fill="{{expr(template$$colors.gradient2)}}"
+        >¿Te interesa esta propiedad?</poster-textbox>
+      </g>
     </g>
 
     <g> <!-- Info derecha -->
@@ -53,52 +115,7 @@
       
       <g> <!-- Logo inmobiliaria -->
         <circle cy="618" cx="900" r="100" fill="#F5F5F5"/>
-        <rect y="550" x="830" width="140" height="140" stroke="red" />
-      </g>
-
-      <g> <!-- Logo inmobiliaria -->
-
-        <g> <!-- Features: ambientes -->
-          <circle cx="45" cy="846" r="6" fill="#CA1737"/>
-          <poster-textbox
-            poster:font-family="Montserrat"
-            poster:font-weight="400"
-            poster:box-size="62 830 225 26"
-            poster:font-size="26"
-            fill="#383838"
-          >4 ambientes</poster-textbox>
-        </g>
-        <g> <!-- Features: dormitorios -->
-          <circle cx="45" cy="896" r="6" fill="#CA1737"/>
-          <poster-textbox
-            poster:font-family="Montserrat"
-            poster:font-weight="400"
-            poster:box-size="62 880 225 26"
-            poster:font-size="26"
-            fill="#383838"
-          >3 dormitorios</poster-textbox>
-        </g>
-        <g> <!-- Features: pileta -->
-          <circle cx="305" cy="846" r="6" fill="#CA1737"/>
-          <poster-textbox
-            poster:font-family="Montserrat"
-            poster:font-weight="400"
-            poster:box-size="322 830 225 26"
-            poster:font-size="26"
-            fill="#383838"
-          >Pileta</poster-textbox>
-        </g>
-        <g> <!-- Features: quincho -->
-          <circle cx="305" cy="896" r="6" fill="#CA1737"/>
-          <poster-textbox
-            poster:font-family="Montserrat"
-            poster:font-weight="400"
-            poster:box-size="322 880 225 26"
-            poster:font-size="26"
-            fill="#383838"
-          >Quincho</poster-textbox>
-        </g>
-
+        <rect y="550" x="830" width="140" height="140" fill="{{expr('lime'), later()}}" stroke="red" />
       </g>
     </g> 
   </g>
