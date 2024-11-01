@@ -298,3 +298,4 @@ function getTextWidth(text, fontSize, font, kerning) {
 }
 
 export default Postercitos
+export { imageB64 } from './utils/imageB64.js'

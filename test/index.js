@@ -1,4 +1,4 @@
-import Postercitos from 'postercitos'
+import Postercitos, { imageB64 } from 'postercitos'
 import { readFile, writeFile } from 'node:fs/promises'
 
 const montserrat400 = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/montserrat@latest/latin-400-normal.ttf')
@@ -10,9 +10,7 @@ const montserrat600 = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/mon
 const montserrat700 = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/montserrat@latest/latin-700-normal.ttf')
   .then(data => data.arrayBuffer())
 
-const homeImage = await readFile('designs/01_wisconsin_home/assets/images/home.jpg', {encoding: 'base64'})
-
-
+const homeImage = await imageB64('https://images.unsplash.com/photo-1721332149069-a470150ef51c')
 
 console.time('test-time')
 const postercitos= new Postercitos({
