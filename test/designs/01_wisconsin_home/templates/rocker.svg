@@ -12,7 +12,7 @@
     </filter>
   </defs>
 
-  <image href="{{expr(user$$imagenCasa), later()}}" width="1080" height="611" preserveAspectRatio="xMidYMid slice"/>
+  <image href="{{expr(user$$casita), later()}}" width="1080" height="611" preserveAspectRatio="xMidYMid slice"/>
   <g>
     <rect y="611" width="1080" height="469" fill="#eaeaea"/> <!-- Fondo blanco -->
     <g> <!-- Precio -->

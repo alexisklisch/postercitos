@@ -1,4 +1,4 @@
 import sharp from 'sharp'
 
-sharp('./output/01_wisconsin_home.svg')
+sharp('./output/casita2.svg')
   .toFile('./output/cositax.png')

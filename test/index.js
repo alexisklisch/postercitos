@@ -11,11 +11,14 @@ const montserrat700 = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/mon
   .then(data => data.arrayBuffer())
 
 const homeImage = await imageB64('https://images.unsplash.com/photo-1721332149069-a470150ef51c')
+const casita = await imageB64('./designs/01_wisconsin_home/assets/images/home.jpeg')
+
 
 console.time('test-time')
 const postercitos= new Postercitos({
   vars: {
-    imagenCasa: homeImage
+    imagenCasa: homeImage,
+    casita
   },
   fonts: [
     {
@@ -44,7 +47,8 @@ const postercitos= new Postercitos({
     },
   ]
 })
-const [design] = await postercitos.svgsFrom('./designs/01_wisconsin_home')
-await writeFile('output/01_wisconsin_home.svg', design, {encoding: 'utf-8'})
+const dsgns = await postercitos.svgsFrom('./designs/01_wisconsin_home')
+
+dsgns.forEach(async (img, i) => await writeFile(`output/casita${i + 1}.svg`, img, {encoding: 'utf-8'}))
 
 console.timeEnd('test-time')

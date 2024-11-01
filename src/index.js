@@ -158,7 +158,8 @@ class Postercitos {
             // Si el texto es mas grande que la caja de texto...
             if (isBiggerThanBox) {
               // Separo en sílabas la palabra
-              const syllabes = syllabler(currentWord)
+              let syllabes = syllabler(currentWord)
+              syllabes = restoreCapitalization(currentWord, syllabes)
               // Utilidad para saber siempre el temaño con las sílabas actuales
               const currentSyllabesFontWidth = () => withFontWidth(`${tempLine} ${syllabes.join('')}-`.trim())
               // Variable donde se guarda la/s sílaba a enviar debajo
@@ -295,6 +296,28 @@ function getTextWidth(text, fontSize, font, kerning) {
   }
 
   return width
+}
+
+function restoreCapitalization(originalWord, syllabes) {
+  let restored = [];
+  let charIndex = 0;
+
+  for (const syllabe of syllabes) {
+    let restoredSyllabe = '';
+
+    for (let i = 0; i < syllabe.length; i++) {
+      if (charIndex < originalWord.length && originalWord[charIndex] === originalWord[charIndex].toUpperCase()) {
+        restoredSyllabe += syllabe[i].toUpperCase();
+      } else {
+        restoredSyllabe += syllabe[i];
+      }
+      charIndex++;
+    }
+
+    restored.push(restoredSyllabe);
+  }
+
+  return restored;
 }
 
 export default Postercitos
