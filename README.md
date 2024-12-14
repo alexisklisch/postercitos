@@ -6,67 +6,13 @@
 
 ## Usage
 
-### Images
+## How works
 
-**input**
-```xml
-<svg width="1080" height="1080" viewBox="0 0 1080 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <pattern id="img-container" patternUnits="objectBoundingBox" width="1" height="1" viewBox="0 0 500 500">
-      <poster-image
-        id="image"
-        width="500"
-        height="500"
-        poster:assets="images%"
-        preserveAspectRatio="xMidYMid slice"/>
-    </pattern>
-  </defs>
-  <rect width="1080" height="1080" fill="url(#img-container)"/>
-</svg>
-```
-
-**output**
-```xml
-<svg width="1080" height="1080" viewBox="0 0 1080 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <pattern id="img-container" patternUnits="objectBoundingBox" width="1" height="1" viewBox="0 0 500 500">
-      <image
-        id="image"
-        width="500"
-        height="500"
-        xlink:href="data:image/jpeg;base64,(BASE64 CODE)"
-        preserveAspectRatio="xMidYMid slice"/>
-    </pattern>
-  </defs>
-  <rect width="1080" height="1080" fill="url(#img-container)"/>
-</svg>
-```
-
-**input**
-```xml
-<svg width="1058" height="1058" viewBox="0 0 1058 1058" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-  <defs>
-    <clipPath id="circleClip">
-      <circle cx="529" cy="529" r="529"/>
-    </clipPath>
-  </defs>
-  <poster-image xlink:href="data:image/jpeg;base64,/9j/4AAQSk...(base64)" width="100%" height="100%" clip-path="url(#circleClip)" preserveAspectRatio="xMidYMid slice"/>
-</svg>
-```
-
-**output**
-```xml
-<svg width="1058" height="1058" viewBox="0 0 1058 1058" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-  <defs>
-    <clipPath id="circleClip">
-      <circle cx="529" cy="529" r="529"/>
-    </clipPath>
-  </defs>
-  <image xlink:href="data:image/jpeg;base64,/9j/4AAQSk...(base64)" width="100%" height="100%" clip-path="url(#circleClip)" preserveAspectRatio="xMidYMid slice"/>
-</svg>
-```
-
-## To do
-
-- Hacer que las imágenes se embeban al final del parse, porque si tiene que parsear la imagen embebida, tarda más
-- Unir distintos textos con distintos formatos. Algunas ideas: `<poster-paragraph/>` `\<poster-text/>`
+1. Toma las variables que pasó el user y las guarda como `user$$nombreVariable`
+2. Guarda las fuentes en una propiedad de la clase
+3. Crea las instancias del parser y el builder del parseador de XML
+4. Al llamar a `svgsFrom`, establece la ruta del diseño
+5. Establece la ruta del manifest.json y el templatesDir/
+6. Lee el manifest.json y extrae assets, `metadata` y `variables`
+7. `template$$nombreVariable` para variables del template
+8. `metadata$$nombreVariable` para los valores de metadata
