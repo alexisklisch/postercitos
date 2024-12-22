@@ -16,3 +16,6 @@
 6. Lee el manifest.json y extrae assets, `metadata` y `variables`
 7. `template$$nombreVariable` para variables del template
 8. `metadata$$nombreVariable` para los valores de metadata
+
+
+## Por hacer

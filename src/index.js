@@ -30,26 +30,63 @@ class Postercitos {
   async svgsFrom (designPath, {batch = false} = {}) {
     // Establecer directorios
     this.designDir = join(process.cwd(), designPath)
-    const manifestPath = join(this.designDir, 'manifest.json') //📄 ruta /manifest.json
-    const templatesDir = join(this.designDir, 'templates') //📂 ruta templates/
+    // const with a value if is a directory or a file
+    const fileName = this.designDir.split('/').pop()
+    const isPosterFile = this.designDir.endsWith('.poster')
+    if (!isPosterFile) throw new Error('The design path must be a .poster file')
 
-    // Parsear el manifest
-    const manifestRaw = await readFile(manifestPath, { encoding: 'utf-8' })
-    const manifest = JSON.parse(manifestRaw)
-    const { assets, metadata, variables } = manifest
+    // Si el nombre de archivo incluye corchete, es el main, si incluye paréntesis, es una variación
+    const mainOrVariation = fileName.includes('[') ? 'main' : fileName.includes('(') ? 'variation' : 'default'
+    // Extraer el valor ya sea corchete o paréntesis
+    const extractedVariation = currentFileName => {
+      const variationName = currentFileName.match(/\[(.*?)\]/)[1]
+      return [variationName, currentFileName.replace(`[${variationName}]`, '')]
+    }
 
-    // Agregar variables del manifest
-    const templateVarsEntries = Object.entries(variables || {})
-    templateVarsEntries.forEach(([key, value]) => this.vars['template$$' + key] = value)
-    // Agregar variables intrínsecas a las variables
-    const metadataEntries = Object.entries(metadata)
+    const rawTemplate = await readFile(this.designDir, {encoding: 'utf-8'})
+    const jsonMatch = rawTemplate.match(/<poster-manifest[^>]*>([\s\S]*?)<\/poster-manifest>/)[1]
+    if (!jsonMatch) throw new Error('The design file must have a <poster-manifest> tag')
+
+    const { metadata, variables } = JSON.parse(jsonMatch)
+    const metadataEntries = Object.entries(metadata || {})
     metadataEntries.forEach(([key, value]) => this.vars['metadata$$' + key] = value)
+    const variablesEntries = Object.entries(variables || {})
+    variablesEntries.forEach(([key, value]) => this.vars['template$$' + key] = value)
+
+    /*
+
+    ANALIZAR
+    const templates = []
+    if (mainOrVariation === 'main') {
+      const [variationName, variationFileName] = extractedVariation(file)
+      templates.push({
+        variation: variationName,
+        template: rawTemplate
+      })
+      // Array con rutas de cada diseño excepto el main
+      const templateName = await readdir(this.designDir.replace(fileName, ''))
+
+        for (const file of templateName) {
+          if (file === fileName || !file.includes(variationFileName)) return
+          const [currentVariationName] = extractedVariation(file)
+          const path = join(this.designDir.replace(fileName, ''), file)
+          const currentTemplate = await readFile(path, {encoding: 'utf-8'})
+          templates.push({
+            variation: currentVariationName,
+            template: currentTemplate
+          })
+      }
+    }
+    */
+
+
+
+    /*
 
     // Array con rutas de cada diseño
     const templatesFileNames = await readdir(templatesDir)
     const templatePaths = templatesFileNames.map(file => join(templatesDir, file))
 
-    const templates = []
 
     // Aplicar variables
     for (const templatePath of templatePaths) {
@@ -75,7 +112,7 @@ class Postercitos {
       return replaceWithVariables(build, this.vars, true)
     })
 
-    return builded
+    return builded*/
 
   }
 

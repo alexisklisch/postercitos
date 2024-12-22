@@ -17,8 +17,8 @@ const casita = await imageB64('./designs/01_wisconsin_home/assets/images/home.jp
 console.time('test-time')
 const postercitos= new Postercitos({
   vars: {
-    imagenCasa: homeImage,
-    casita
+    imagenCasa: 'homeImage TEXTITO',
+    //casita
   },
   fonts: [
     {
@@ -47,8 +47,8 @@ const postercitos= new Postercitos({
     },
   ]
 })
-const dsgns = await postercitos.svgsFrom('./designs/01_wisconsin_home')
+const dsgns = await postercitos.svgsFrom('./designs/01_wisconsin_home/templates/appleton-example-1[square].poster')
 
-dsgns.forEach(async (img, i) => await writeFile(`output/casita${i + 1}.svg`, img, {encoding: 'utf-8'}))
+//dsgns.forEach(async (img, i) => await writeFile(`output/casita${i + 1}.svg`, img, {encoding: 'utf-8'}))
 
 console.timeEnd('test-time')
