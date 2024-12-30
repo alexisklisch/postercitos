@@ -47,7 +47,7 @@ const postercitos= new Postercitos({
     },
   ]
 })
-const dsgns = await postercitos.svgsFrom('./designs/01_wisconsin_home/templates/appleton-example-1[square].poster')
+const dsgns = await postercitos.svgsFrom('./designs/01_wisconsin_home/templates/appleton-example-1[square].poster', { family: true })
 
 //dsgns.forEach(async (img, i) => await writeFile(`output/casita${i + 1}.svg`, img, {encoding: 'utf-8'}))
 

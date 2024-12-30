@@ -1,5 +1,5 @@
 import { readFile, readdir } from 'node:fs/promises'
-import { join } from 'node:path'
+import path, { join } from 'node:path'
 import { XMLParser, XMLBuilder } from 'fast-xml-parser'
 import { parse } from 'opentype.js'
 import { syllabler } from './utils/syllabler.js'
@@ -27,49 +27,74 @@ class Postercitos {
 
   }
 
-  async svgsFrom (designPath, {batch = false} = {}) {
+  async svgsFrom (designPath, { family = false } = {}) {
     // Establecer directorios
-    this.designDir = join(process.cwd(), designPath)
-    // const with a value if is a directory or a file
-    const fileName = this.designDir.split('/').pop()
-    const isPosterFile = this.designDir.endsWith('.poster')
-    if (!isPosterFile) throw new Error('The design path must be a .poster file')
+    this.mainPosterDir = join(process.cwd(), designPath)
+    const postersPackage = []
 
-    // Si el nombre de archivo incluye corchete, es el main, si incluye paréntesis, es una variación
-    const mainOrVariation = fileName.includes('[') ? 'main' : fileName.includes('(') ? 'variation' : 'default'
     // Extraer el valor ya sea corchete o paréntesis
-    const extractedVariation = currentFileName => {
-      const variationName = currentFileName.match(/\[(.*?)\]/)[1]
-      return [variationName, currentFileName.replace(`[${variationName}]`, '')]
+    const fileDataExtractor = filePath => {
+      // Si el nombre de archivo incluye corchete, es el main, si incluye paréntesis, es una variación
+      const fileName = filePath.split('/').pop()
+      const isPosterFile = filePath.endsWith('.poster')
+      if (!isPosterFile) throw new Error('The design path must be a .poster file')
+      
+      const mainOrVariation = fileName.includes('[') ? 'main' : filePath.includes('(') ? 'variation' : 'default'
+      const variationName = fileName.match(/\[(.*?)\]/)[1]
+      const familyName = fileName.replace(`[${variationName}]`, '').replace('.poster', '')
+
+      return { variationName, familyName, variationType: mainOrVariation, path: filePath }
     }
 
-    const rawTemplate = await readFile(this.designDir, {encoding: 'utf-8'})
-    const jsonMatch = rawTemplate.match(/<poster-manifest[^>]*>([\s\S]*?)<\/poster-manifest>/)[1]
-    if (!jsonMatch) throw new Error('The design file must have a <poster-manifest> tag')
+    const { variationName, familyName, variationType } = fileDataExtractor(this.mainPosterDir)
 
-    const { metadata, variables } = JSON.parse(jsonMatch)
-    const metadataEntries = Object.entries(metadata || {})
-    metadataEntries.forEach(([key, value]) => this.vars['metadata$$' + key] = value)
-    const variablesEntries = Object.entries(variables || {})
-    variablesEntries.forEach(([key, value]) => this.vars['template$$' + key] = value)
+    if (family && variationType === 'main') {
+      const templatesPath = this.mainPosterDir.split('/').slice(0, -1).join('/')
+      const templatesFileNames = await readdir(templatesPath)
+      
+      for (const file of templatesFileNames) {
+        if (!file.includes('.poster') || !file.includes(familyName)) continue
+
+        const { variationName, variationType: currentVariationType } = fileDataExtractor(join(templatesPath, file))
+        if (currentVariationType === 'main' && currentVariationType !== variationType) throw new Error('The main design must have only one main variation')
+        if (currentVariationType === 'default') throw new Error('All variations must have a name')
+
+        postersPackage.push({ path: join(templatesPath, file), variationName, currentVariationType })
+      }
+
+    }
+
+    console.log(postersPackage)
+
+    // const with a value if is a directory or a file
+    
+    // const rawTemplate = await readFile(this.mainPosterDir, {encoding: 'utf-8'})
+    // const jsonMatch = rawTemplate.match(/<poster-manifest[^>]*>([\s\S]*?)<\/poster-manifest>/)[1]
+    // if (!jsonMatch) throw new Error('The design file must have a <poster-manifest> tag')
+
+    // const { metadata, variables } = JSON.parse(jsonMatch)
+    // const metadataEntries = Object.entries(metadata || {})
+    // metadataEntries.forEach(([key, value]) => this.vars['metadata$$' + key] = value)
+    // const variablesEntries = Object.entries(variables || {})
+    // variablesEntries.forEach(([key, value]) => this.vars['template$$' + key] = value)
 
     /*
 
     ANALIZAR
     const templates = []
     if (mainOrVariation === 'main') {
-      const [variationName, variationFileName] = extractedVariation(file)
+      const [variationName, variationFileName] = fileDataExtractor(file)
       templates.push({
         variation: variationName,
         template: rawTemplate
       })
       // Array con rutas de cada diseño excepto el main
-      const templateName = await readdir(this.designDir.replace(fileName, ''))
+      const templateName = await readdir(this.mainPosterDir.replace(fileName, ''))
 
         for (const file of templateName) {
           if (file === fileName || !file.includes(variationFileName)) return
-          const [currentVariationName] = extractedVariation(file)
-          const path = join(this.designDir.replace(fileName, ''), file)
+          const [currentVariationName] = fileDataExtractor(file)
+          const path = join(this.mainPosterDir.replace(fileName, ''), file)
           const currentTemplate = await readFile(path, {encoding: 'utf-8'})
           templates.push({
             variation: currentVariationName,
@@ -293,7 +318,7 @@ class Postercitos {
 
           let base64File = ''
           if (srcType === 'assets') {
-            const imgAssetPath = join(this.designDir,'assets', 'images', assetData)
+            const imgAssetPath = join(this.mainPosterDir,'assets', 'images', assetData)
             base64File = await readFile(imgAssetPath, {encoding: 'base64'})
           }
 
