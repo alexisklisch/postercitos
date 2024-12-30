@@ -36,12 +36,13 @@ class Postercitos {
     const fileDataExtractor = filePath => {
       // Si el nombre de archivo incluye corchete, es el main, si incluye paréntesis, es una variación
       const fileName = filePath.split('/').pop()
-      const isPosterFile = filePath.endsWith('.poster')
-      if (!isPosterFile) throw new Error('The design path must be a .poster file')
+      if (!filePath.endsWith('.poster')) throw new Error('The design path must be a .poster file')
       
       const mainOrVariation = fileName.includes('[') ? 'main' : filePath.includes('(') ? 'variation' : 'default'
-      const variationName = fileName.match(/\[(.*?)\]/)[1]
-      const familyName = fileName.replace(`[${variationName}]`, '').replace('.poster', '')
+      
+      const match = fileName.match(/\((.*?)\)/)
+      const variationName = match ? match[1] : null
+      const familyName = fileName.replace(match ? `[${match[1]}]` : '', '').replace('.poster', '')
 
       return { variationName, familyName, variationType: mainOrVariation, path: filePath }
     }
@@ -49,17 +50,24 @@ class Postercitos {
     const { variationName, familyName, variationType } = fileDataExtractor(this.mainPosterDir)
 
     if (family && variationType === 'main') {
-      const templatesPath = this.mainPosterDir.split('/').slice(0, -1).join('/')
+      const templatesPath = join(this.mainPosterDir, '..')
       const templatesFileNames = await readdir(templatesPath)
+
+      const posterFiles = templatesFileNames.filter(file => file.includes('.poster') && file.includes(familyName))
       
-      for (const file of templatesFileNames) {
-        if (!file.includes('.poster') || !file.includes(familyName)) continue
+      for (const file of posterFiles) {
+        const fullPath = join(templatesPath, file)
+        const { variationName, variationType: currentVariationType } = fileDataExtractor(fullPath)
+        
+        if (currentVariationType === 'main' && currentVariationType !== variationType) {
+          throw new Error('The main design must have only one main variation')
+        }
 
-        const { variationName, variationType: currentVariationType } = fileDataExtractor(join(templatesPath, file))
-        if (currentVariationType === 'main' && currentVariationType !== variationType) throw new Error('The main design must have only one main variation')
-        if (currentVariationType === 'default') throw new Error('All variations must have a name')
+        if (currentVariationType === 'default') {
+          throw new Error('All variations must have a name');
+        }
 
-        postersPackage.push({ path: join(templatesPath, file), variationName, currentVariationType })
+        postersPackage.push({ path: fullPath, variationName, currentVariationType })
       }
 
     }
